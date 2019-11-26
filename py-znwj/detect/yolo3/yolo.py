@@ -218,13 +218,13 @@ class Yolo(object):
         dic_ms['exceptionImageFileNames'] = dic_js['exceptionImageFileNames'] = dic_yw['exceptionImageFileNames'] = []
         for i in out_file_name:
             if 'MS' in i:
-                dic_ms['exceptionImageFileNames'].append(out_file_name)
+                dic_ms['exceptionImageFileNames'].append(i)
                 dict_all.append(dic_ms)
             elif 'JS' in i:
-                dic_js['exceptionImageFileNames'].append(out_file_name)
+                dic_js['exceptionImageFileNames'].append(i)
                 dict_all.append(dic_js)
             elif 'YW' in i:
-                dic_yw['exceptionImageFileNames'].append(out_file_name)
+                dic_yw['exceptionImageFileNames'].append(i)
                 dict_all.append(dic_yw)
 
         return dict_all
