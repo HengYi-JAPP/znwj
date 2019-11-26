@@ -1,8 +1,8 @@
-import json
-
 import yaml
-from yolo3.yolo import *
-from resnet.resnet import *
+
+from detect.resnet.resnet import *
+from detect.yolo3.yolo import *
+
 
 class Detector(object):
     def __init__(self, config_file):

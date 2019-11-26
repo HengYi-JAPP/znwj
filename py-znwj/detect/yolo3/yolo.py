@@ -5,19 +5,19 @@ Created on Mon Nov 25 16:55:55 2019
 @author: 54198
 """
 
+import colorsys
+import os
 from timeit import default_timer as timer
 
 import numpy as np
-import colorsys
 from PIL import Image, ImageFont, ImageDraw
 from keras import backend as K
-from keras.models import load_model
 from keras.layers import Input
+from keras.models import load_model
 from keras.utils import multi_gpu_model
-import os
-from yolo3.utils import letterbox_image
-from yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
-from yolo3.utils import letterbox_image
+
+from detect.yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
+from detect.yolo3.utils import letterbox_image
 
 
 class Yolo(object):
