@@ -24,16 +24,28 @@ class resnet(object):
         # self.__db_path = config.dbPath
         self.cx_bs_model_path = config['resnet']['model_path']
         self.bs_threshold = config['resnet']['bs_threshold']
+        self.cx_threshold = config['resnet']['cx_threshold']
+
         self.window_count = config['resnet']['window_count']
         self.original_path = config['db_path']['original_path']
         self.load_model()
 
+
+    #画出bs位置
     def drawbox_bs(self, img, box_nums, rects):
         img = cv2.imread(img)
         for i, num in enumerate(box_nums):
             box = rects[num[0]]
             cv2.drawContours(img, [box], 0, (0, 0, 255), 2)
         return img
+
+
+    #标记cx图片
+    def draw_cx(self, img):
+        img = cv2.imread(img)
+        cv2.putText(img, 'CX', (20, 20), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), lineType=cv2.LINE_AA)
+        return img
+
 
     # 输入：
     # img :输入图像
@@ -130,8 +142,10 @@ class resnet(object):
 
         return batch_holder, rects
 
+
     def predict_cx_bs(self, img_path, model, camera_num):
-        if camera_num == 12:
+        box_location=[]
+        if camera_num == '12':
             x, box_location = self.bs_slide_windows(img_path, self.window_count)
 
         else:
@@ -145,6 +159,7 @@ class resnet(object):
     def load_model(self):
         self.model_cx_bs = load_model(self.cx_bs_model_path)
 
+
     def detect(self, code):
         path = self.original_path + code + '/original/'
         outdir = self.original_path + code + '/defect/'
@@ -152,30 +167,51 @@ class resnet(object):
         out_label = []
 
         for jpgfile in os.listdir(path):
+            cam_num = str(jpgfile[:-4] )
+            img_path = path + jpgfile
+            if cam_num=='12':
 
-            if True:
-
-                pred, img_cx_bs, box_locations = self.predict_cx_bs(path + jpgfile, self.model_cx_bs, 12)
+                pred, img_cx_bs, box_locations = self.predict_cx_bs(img_path, self.model_cx_bs, cam_num)
 
                 temp = pred[:, 2]
-                res_index = np.argwhere(temp > 0.3)
-                result_img = self.drawbox_bs(path + jpgfile, res_index, box_locations)
-                result_img = Image.fromarray(result_img)
-                out_label.append('绊丝')
-                out_file_name.append('defect_' + jpgfile[:-4] + '_BS.jpg')
-                result_img.save(os.path.join(outdir, os.path.basename('defect_' + jpgfile[:-4] + '_BS.jpg')))
+                res_index = np.argwhere(temp > self.bs_threshold)
 
+                #发现了一个以上拌丝
+                if len(res_index)>0:
+                    result_img = self.drawbox_bs(img_path, res_index, box_locations)
+
+                    out_label.append('绊丝')
+
+                    res_file_name = os.path.basename('defect_' + jpgfile[:-4] + '_BS.jpg')
+                    out_file_name.append(res_file_name)
+                    cv2.imwrite(os.path.join(outdir, res_file_name), result_img)
             # 判断成型
             else:
-                pred, img_cx_bs = self.predict_cx_bs(path + jpgfile, self.model_cx_bs)
+                pred, img_cx_bs,_ = self.predict_cx_bs(img_path, self.model_cx_bs,cam_num)
+
                 temp = pred[0, :]
-                index = np.argmax(temp)
-                if index == 0:
-                    draw = ImageDraw.Draw(img_cx_bs)
-                    draw.text((20, 20), 'CX', fill=(0, 255, 0))
+                cx_positive = temp[0]
+                cx_negative = temp[1]
+                if temp > self.cx_threshold and cx_positive > cx_negative :
+                    result_img = self.draw_cx(img_path)
                     out_label.append('成型')
-                    out_file_name.append('defect_' + jpgfile[:-4] + '_CX.jpg')
-                    img_cx_bs.save(os.path.join(outdir, os.path.basename('defect_' + jpgfile[:-4] + '_CX.jpg')))
-                else:
-                    out_label.append(' ')
-                    out_file_name.append(path + '/' + jpgfile)
+
+                    res_file_name = os.path.basename('defect_' + jpgfile[:-4] + '_CX.jpg')
+                    out_file_name.append(res_file_name)
+                    cv2.imwrite(os.path.join(outdir, res_file_name), result_img)
+        if len(out_label)>0:
+            dic_cx = {}
+            dic_bs = {}
+            dic_all =[]
+            dic_cx['exception']='成型'
+            dic_bs['exception']='拌丝'
+            dic_bs['exceptionImageFileNames'] =  dic_cx['exceptionImageFileNames'] = []
+            for i in out_file_name:
+                if 'CX' in i:
+                    dic_cx['exceptionImageFileNames'].append(i)
+                    dic_all.append(dic_cx)
+                elif 'BS' in i:
+                    dic_bs['exceptionImageFileNames'].append(i)
+                    dic_all.append(dic_bs)
+
+        return  dic_all
