@@ -16,8 +16,8 @@ from keras.layers import Input
 from keras.models import load_model
 from keras.utils import multi_gpu_model
 
-from detect.yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
-from detect.yolo3.utils import letterbox_image
+from yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
+from yolo3.utils import letterbox_image
 
 
 class Yolo(object):
@@ -207,9 +207,27 @@ class Yolo(object):
                         out_file_name.append('defect_' + jpgfile[:-4] + name + '.jpg')
                         img.save(os.path.join(outdir, os.path.basename('defect_' + jpgfile[:-4] + name + '.jpg')))
 
-            print(out_label, out_file_name)
 
-        return out_label, out_file_name
+        dic_ms = {}
+        dic_js = {}
+        dic_yw = {}
+        dict_all = []
+        dic_ms['exception'] = '毛丝'
+        dic_js['exception'] = '夹丝'
+        dic_yw['exception'] = '油污'
+        dic_ms['exceptionImageFileNames'] = dic_js['exceptionImageFileNames'] = dic_yw['exceptionImageFileNames'] = []
+        for i in out_file_name:
+            if 'MS' in i:
+                dic_ms['exceptionImageFileNames'].append(out_file_name)
+                dict_all.append(dic_ms)
+            elif 'JS' in i:
+                dic_js['exceptionImageFileNames'].append(out_file_name)
+                dict_all.append(dic_js)
+            elif 'YW' in i:
+                dic_yw['exceptionImageFileNames'].append(out_file_name)
+                dict_all.append(dic_yw)
+
+        return dict_all
 
 # import yaml
 # config = yaml.load(open('D:\python\znwj\config.yml'))

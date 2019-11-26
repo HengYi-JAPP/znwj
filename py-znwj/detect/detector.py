@@ -1,7 +1,7 @@
 import yaml
-
-from detect.resnet.resnet import *
-from detect.yolo3.yolo import *
+import json
+from resnet.resnet import *
+from yolo3.yolo import *
 
 
 class Detector(object):
