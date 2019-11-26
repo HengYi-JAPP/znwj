@@ -1,14 +1,15 @@
 import json
 
 import yaml
-
+from yolo3.yolo import *
+from resnet.resnet import *
 
 class Detector(object):
     def __init__(self, config_file):
         config = yaml.load(open(config_file))
         # 伪代码 需修改
-        # self.__detector1 = Detector1(config)
-        # self.__detector2 = Detector2(config)
+        self.__detector1 = Yolo(config)
+        self.__detector2 = resnet(config)
 
     def detect(self, code):
         infos1 = self.__detector1.detect(code);
