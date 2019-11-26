@@ -3,7 +3,7 @@ package com.hengyi.japp.znwj.verticle;
 import com.google.inject.Inject;
 import com.hengyi.japp.znwj.ZnwjModule;
 import com.hengyi.japp.znwj.application.BackendService;
-import com.hengyi.japp.znwj.interfaces.detect.DetectResult;
+import com.hengyi.japp.znwj.interfaces.python.DetectResult;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import lombok.extern.slf4j.Slf4j;

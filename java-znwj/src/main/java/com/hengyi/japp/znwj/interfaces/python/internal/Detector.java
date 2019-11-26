@@ -1,4 +1,4 @@
-package com.hengyi.japp.znwj.interfaces.detect.internal;
+package com.hengyi.japp.znwj.interfaces.python.internal;
 
 import com.hengyi.japp.znwj.domain.SilkInfo;
 import io.netty.handler.codec.mqtt.MqttQoS;
@@ -26,9 +26,6 @@ public class Detector {
     private final MqttEndpoint endpoint;
     @ToString.Include
     @Getter
-    private final String clientIdentifier;
-    @ToString.Include
-    @Getter
     private boolean subscribed;
     @Getter
     private List<MqttTopicSubscription> mqttTopicSubscriptions;
@@ -37,7 +34,6 @@ public class Detector {
 
     Detector(MqttEndpoint endpoint) {
         this.endpoint = endpoint;
-        clientIdentifier = endpoint.clientIdentifier();
     }
 
     @Override
@@ -49,12 +45,12 @@ public class Detector {
             return false;
         }
         Detector detector = (Detector) o;
-        return Objects.equals(getClientIdentifier(), detector.getClientIdentifier());
+        return Objects.equals(endpoint.clientIdentifier(), detector.endpoint.clientIdentifier());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClientIdentifier());
+        return Objects.hash(endpoint.clientIdentifier());
     }
 
     void subscribeHandler(MqttSubscribeMessage subscribe) {
@@ -74,15 +70,15 @@ public class Detector {
 
     public void detect(SilkInfo silkInfo) {
         if (!subscribed) {
-            log.warn("{} 的 subscribed={}，确在发送队列！", clientIdentifier, subscribed);
+            log.warn("{} 的 subscribed={}，却在发送队列！", endpoint.clientIdentifier(), subscribed);
         }
         final String code = silkInfo.getCode();
         final Buffer buffer = Buffer.buffer(code);
         endpoint.publish(DETECT_TOPIC, buffer, MqttQoS.AT_LEAST_ONCE, false, false, ar -> {
             if (ar.succeeded()) {
-                log.debug(clientIdentifier + " publish " + code);
+                log.debug(DETECT_TOPIC + " publish " + code);
             } else {
-                log.error(clientIdentifier + " publish " + code, ar.cause());
+                log.error(DETECT_TOPIC + " publish " + code, ar.cause());
             }
         });
     }

@@ -1,4 +1,4 @@
-package com.hengyi.japp.znwj.interfaces.detect.internal;
+package com.hengyi.japp.znwj.interfaces.python.internal;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -6,7 +6,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.hengyi.japp.znwj.application.BackendService.Status;
 import com.hengyi.japp.znwj.domain.SilkInfo;
-import com.hengyi.japp.znwj.interfaces.detect.DetectService;
+import com.hengyi.japp.znwj.interfaces.python.PythonService;
 import com.hengyi.japp.znwj.verticle.BackendVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -31,7 +31,7 @@ import static java.util.Optional.ofNullable;
  */
 @Slf4j
 @Singleton
-public class DetectServiceImpl implements DetectService {
+public class PythonServiceImpl implements PythonService {
     private final Vertx vertx;
     private final JsonObject detectConfig;
     private Status status = INIT;
@@ -40,7 +40,7 @@ public class DetectServiceImpl implements DetectService {
     private Map<String, Detector> detectorMap = Maps.newConcurrentMap();
 
     @Inject
-    private DetectServiceImpl(Vertx vertx, @Named("detectConfig") JsonObject detectConfig) {
+    private PythonServiceImpl(Vertx vertx, @Named("detectConfig") JsonObject detectConfig) {
         this.vertx = vertx;
         this.detectConfig = detectConfig;
     }

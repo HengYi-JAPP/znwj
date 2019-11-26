@@ -2,7 +2,7 @@ package com.hengyi.japp.znwj.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.ixtf.japp.core.J;
-import com.hengyi.japp.znwj.interfaces.detect.DetectResult;
+import com.hengyi.japp.znwj.interfaces.python.DetectResult;
 import lombok.Data;
 import lombok.ToString;
 

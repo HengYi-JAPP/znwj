@@ -4,7 +4,7 @@ import com.github.ixtf.japp.codec.Jcodec;
 import com.hengyi.japp.znwj.Constant;
 import com.hengyi.japp.znwj.MainVerticle;
 import com.hengyi.japp.znwj.domain.SilkInfo;
-import com.hengyi.japp.znwj.interfaces.detect.DetectResult;
+import com.hengyi.japp.znwj.interfaces.python.DetectResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;

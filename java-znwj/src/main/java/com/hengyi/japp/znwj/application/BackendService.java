@@ -2,7 +2,7 @@ package com.hengyi.japp.znwj.application;
 
 import com.google.inject.ImplementedBy;
 import com.hengyi.japp.znwj.application.internal.BackendServiceImpl;
-import com.hengyi.japp.znwj.interfaces.detect.DetectResult;
+import com.hengyi.japp.znwj.interfaces.python.DetectResult;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;

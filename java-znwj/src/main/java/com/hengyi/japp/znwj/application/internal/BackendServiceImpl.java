@@ -6,8 +6,8 @@ import com.hengyi.japp.znwj.application.BackendService;
 import com.hengyi.japp.znwj.application.SilkInfoService;
 import com.hengyi.japp.znwj.domain.SilkInfo;
 import com.hengyi.japp.znwj.interfaces.camera.CameraService;
-import com.hengyi.japp.znwj.interfaces.detect.DetectResult;
-import com.hengyi.japp.znwj.interfaces.detect.DetectService;
+import com.hengyi.japp.znwj.interfaces.python.DetectResult;
+import com.hengyi.japp.znwj.interfaces.python.PythonService;
 import com.hengyi.japp.znwj.interfaces.plc.PlcService;
 import com.hengyi.japp.znwj.interfaces.riamb.RiambService;
 import io.vertx.core.Vertx;
@@ -31,17 +31,17 @@ public class BackendServiceImpl implements BackendService {
     private final PlcService plcService;
     private final RiambService riambService;
     private final CameraService cameraService;
-    private final DetectService detectService;
+    private final PythonService pythonService;
     private final SilkInfoService silkInfoService;
 
     @Inject
-    private BackendServiceImpl(Vertx vertx, SilkInfoService silkInfoService, DetectService detectService, PlcService plcService, RiambService riambService, CameraService cameraService) {
+    private BackendServiceImpl(Vertx vertx, SilkInfoService silkInfoService, PythonService pythonService, PlcService plcService, RiambService riambService, CameraService cameraService) {
         this.vertx = vertx;
         this.silkInfoService = silkInfoService;
         this.plcService = plcService;
         this.riambService = riambService;
         this.cameraService = cameraService;
-        this.detectService = detectService;
+        this.pythonService = pythonService;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class BackendServiceImpl implements BackendService {
             final SilkInfo silkInfo = tuple.getT1();
             final Path imgPath = tuple.getT2();
             return silkInfoService.preapareDetectData(silkInfo, imgPath);
-        }).flatMap(detectService::detect).then();
+        }).flatMap(pythonService::detect).then();
     }
 
     @Override
@@ -72,7 +72,7 @@ public class BackendServiceImpl implements BackendService {
     @Override
     public Mono<Map<String, Object>> info() {
         final Mono<Map<String, Object>> plc$ = plcService.info();
-        final Mono<Map<String, Object>> detect$ = detectService.info();
+        final Mono<Map<String, Object>> detect$ = pythonService.info();
         final Mono<Map<String, Object>> camera$ = cameraService.info();
         return Mono.zip(plc$, detect$, camera$).map(tuple -> {
             final Map<String, Object> plc = tuple.getT1();
@@ -88,7 +88,7 @@ public class BackendServiceImpl implements BackendService {
             silkInfoService.start();
             cameraService.start().block();
             plcService.start().block();
-            detectService.start().block();
+            pythonService.start().block();
             return info();
         } catch (Throwable e) {
             return Mono.error(e);
@@ -101,7 +101,7 @@ public class BackendServiceImpl implements BackendService {
             silkInfoService.stop();
             cameraService.stop().block();
             plcService.stop().block();
-            detectService.stop().block();
+            pythonService.stop().block();
             return info();
         } catch (Throwable e) {
             return Mono.error(e);

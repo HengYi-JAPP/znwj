@@ -33,8 +33,8 @@ public class ZnwjLauncher extends Launcher {
 
     @Override
     public void handleDeployFailed(Vertx vertx, String mainVerticle, DeploymentOptions deploymentOptions, Throwable cause) {
-        super.handleDeployFailed(vertx, mainVerticle, deploymentOptions, cause);
         log.error("handleDeployFailed[" + mainVerticle + "]", cause);
+        super.handleDeployFailed(vertx, mainVerticle, deploymentOptions, cause);
     }
 
     @Override

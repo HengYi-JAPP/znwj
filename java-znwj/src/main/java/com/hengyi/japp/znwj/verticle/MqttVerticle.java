@@ -2,7 +2,7 @@ package com.hengyi.japp.znwj.verticle;
 
 import com.google.inject.Inject;
 import com.hengyi.japp.znwj.ZnwjModule;
-import com.hengyi.japp.znwj.interfaces.detect.DetectService;
+import com.hengyi.japp.znwj.interfaces.python.PythonService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.mqtt.MqttServer;
 
@@ -13,12 +13,12 @@ import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.CONNECTION_REFUS
  */
 public class MqttVerticle extends AbstractVerticle {
     @Inject
-    private DetectService detectService;
+    private PythonService pythonService;
 
     @Override
     public void start() throws Exception {
         ZnwjModule.injectMembers(this);
-        MqttServer.create(vertx).endpointHandler(detectService::handler).listen(1883);
+        MqttServer.create(vertx).endpointHandler(pythonService::handler).listen(1883);
         MqttServer.create(vertx).endpointHandler(endpoint -> {
             switch (endpoint.clientIdentifier()) {
                 case "detect": {

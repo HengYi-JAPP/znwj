@@ -1,4 +1,4 @@
-package com.hengyi.japp.znwj.interfaces.detect;
+package com.hengyi.japp.znwj.interfaces.python;
 
 import com.hengyi.japp.znwj.domain.DetectExceptionInfo;
 import lombok.Data;
