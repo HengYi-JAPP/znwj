@@ -4,7 +4,7 @@ Created on Mon Nov 25 16:55:55 2019
 
 @author: 54198
 """
-123
+
 from timeit import default_timer as timer
 
 import numpy as np
