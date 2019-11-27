@@ -15,7 +15,6 @@ from keras import backend as K
 from keras.layers import Input
 from keras.models import load_model
 from keras.utils import multi_gpu_model
-
 from yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from yolo3.utils import letterbox_image
 
@@ -174,8 +173,9 @@ class Yolo(object):
         return detect_name
 
     def detect(self, code):
-        path = self.original_path + code + '/original/'
-        outdir = self.original_path + code + '/defect/'
+        basePath = self.db_path + '/' + code;
+        path = basePath + '/original/'
+        outdir = basePath + '/defect/'
         out_file_name = []
         out_label = []
 
@@ -232,5 +232,3 @@ class Yolo(object):
 # import yaml
 # config = yaml.load(open('D:\python\znwj\config.yml'))
 # yolo=Yolo(config)
-
-

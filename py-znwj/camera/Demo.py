@@ -43,9 +43,8 @@ class BITMAPINFOHEADER(Structure):
         ('biClrImportant', c_uint),
     ]
 
+
 # 调色板，只有8bit及以下才需要
-
-
 class RGBQUAD(Structure):
     _fields_ = [
         ('rgbBlue', c_ubyte),

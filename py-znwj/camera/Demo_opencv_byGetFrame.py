@@ -12,6 +12,8 @@ import time
 
 import cv2
 import numpy
+from PIL import Image
+
 from camera.ImageConvert import *
 from camera.MVSDK import *
 
@@ -582,7 +584,10 @@ def demo():
             cvImage = numpy.array(colorByteArray).reshape(imageParams.height, imageParams.width, 3)
         # --- end if ---
 
-        cv2.imshow('myWindow', cvImage)
+        im = Image.fromarray(cvImage)
+        im.save("/tmp/znwj/test.jpeg")
+
+        # cv2.imshow('myWindow', cvImage)
         gc.collect()
 
         if (cv2.waitKey(1) >= 0):

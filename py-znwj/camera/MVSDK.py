@@ -17,7 +17,7 @@ def enum(**enums):
 # 32bit
 # MVSDKdll = cdll.LoadLibrary("./dll/x86/libMVSDK.so")
 # 64bit
-MVSDKdll = cdll.LoadLibrary("libMVSDK.so")
+MVSDKdll = cdll.LoadLibrary("/opt/DahuaTech/MVviewer/share/Python/dll/x64/libMVSDK.so")
 
 # SDK.h => define 宏定义
 MAX_PARAM_CNT = 1000
