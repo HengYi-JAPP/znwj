@@ -1,11 +1,11 @@
 from detect.resnet.resnet import *
-from detect.yolo3.yolo import *
 
 
 class Detector(object):
     def __init__(self, config):
-        self.__detector1 = Yolo(config)
-        self.__detector2 = resnet(config)
+        # self.__detector1 = Yolo(config)
+        # self.__detector2 = resnet(config)
+        pass
 
     def detect(self, code):
         infos1 = self.__detector1.detect(code)

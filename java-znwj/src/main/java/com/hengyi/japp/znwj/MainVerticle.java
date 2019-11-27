@@ -2,7 +2,6 @@ package com.hengyi.japp.znwj;
 
 import com.hengyi.japp.znwj.verticle.AgentVerticle;
 import com.hengyi.japp.znwj.verticle.BackendVerticle;
-import com.hengyi.japp.znwj.verticle.MqttVerticle;
 import com.hengyi.japp.znwj.verticle.RestVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
@@ -22,7 +21,6 @@ public class MainVerticle extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
         start();
         deployBackendVerticle()
-                .compose(it -> deployMqttVerticle())
                 .compose(it -> deployRestVerticle())
                 .compose(it -> deployAgentVerticle())
                 .<Void>mapEmpty().setHandler(startFuture);
@@ -34,13 +32,6 @@ public class MainVerticle extends AbstractVerticle {
                     .setWorker(true)
                     .setInstances(20);
             vertx.deployVerticle(BackendVerticle.class, deploymentOptions, p);
-        });
-    }
-
-    private Future<String> deployMqttVerticle() {
-        return Future.future(p -> {
-            final DeploymentOptions deploymentOptions = new DeploymentOptions();
-            vertx.deployVerticle(MqttVerticle.class, deploymentOptions, p);
         });
     }
 

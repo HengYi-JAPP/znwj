@@ -15,8 +15,9 @@ from keras import backend as K
 from keras.layers import Input
 from keras.models import load_model
 from keras.utils import multi_gpu_model
-from yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
-from yolo3.utils import letterbox_image
+
+from detect.yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
+from detect.yolo3.utils import letterbox_image
 
 
 class Yolo(object):

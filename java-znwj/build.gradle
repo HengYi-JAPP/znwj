@@ -33,10 +33,11 @@ dependencyManagement {
 dependencies {
     annotationProcessor "io.vertx:vertx-codegen:3.8.3:processor"
     compile "com.github.ixtf.vertx:jax-rs",
-            "io.vertx:vertx-mqtt",
             "io.vertx:vertx-health-check"
 // https://mvnrepository.com/artifact/org.codehaus.groovy/groovy
     compile group: 'org.codehaus.groovy', name: 'groovy', version: '2.5.8'
+// https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.client.mqttv3
+    compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.2'
 
 }
 

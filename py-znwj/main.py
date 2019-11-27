@@ -48,6 +48,9 @@ def on_message(client, userdata, msg):
         client.publish(DETECT_RESULT_TOPIC, result)
 
 
+CAMERAS.grab('123')
+print('grab finish')
+
 CLIENT = mqtt.Client('detect')
 CLIENT.on_connect = on_connect
 CLIENT.on_message = on_message

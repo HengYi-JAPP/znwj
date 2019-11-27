@@ -4,11 +4,10 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.hengyi.japp.znwj.application.BackendService;
 import com.hengyi.japp.znwj.application.BackendService.Status;
 import com.hengyi.japp.znwj.domain.SilkInfo;
 import com.hengyi.japp.znwj.interfaces.plc.PlcService;
-import com.hengyi.japp.znwj.verticle.BackendVerticle;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -16,6 +15,7 @@ import reactor.core.publisher.Mono;
 import java.util.Date;
 import java.util.Map;
 
+import static com.hengyi.japp.znwj.ZnwjModule.getInstance;
 import static com.hengyi.japp.znwj.application.BackendService.Status.*;
 import static java.util.Optional.ofNullable;
 
@@ -25,29 +25,32 @@ import static java.util.Optional.ofNullable;
 @Slf4j
 @Singleton
 public class PlcServiceImpl implements PlcService {
-    private final Vertx vertx;
     private Status status = INIT;
     private Date startDateTime;
     private Throwable error;
 
     @Inject
-    private PlcServiceImpl(Vertx vertx, @Named("plcConfig") JsonObject plcConfig) {
-        this.vertx = vertx;
+    private PlcServiceImpl(@Named("plcConfig") JsonObject plcConfig) {
     }
 
     @Override
     public void nextRfidNum(int rfidNum) {
-        vertx.eventBus().send(BackendVerticle.NEXT_RFID_NUM, rfidNum);
+        final BackendService backendService = getInstance(BackendService.class);
+        backendService.handleRfidNum(rfidNum).subscribe();
     }
 
     @Override
     public Mono<SilkInfo> handleEliminate(SilkInfo silkInfo) {
-        if (silkInfo.isEliminateHandled() || !silkInfo.hasException()) {
+        if (silkInfo.isEliminateHandled()) {
             return Mono.just(silkInfo);
         }
-        // fixme 处理剔除信息
+        final BackendService backendService = getInstance(BackendService.class);
+        final Mono<SilkInfo> result$ = Mono.just(silkInfo);
+        if (silkInfo.hasException()) {
+            // fixme 处理剔除信息
+        }
         log.debug("{}  剔除", silkInfo);
-        return Mono.just(silkInfo);
+        return result$.doOnNext(backendService::updateStatistic);
     }
 
     @Override
@@ -64,23 +67,11 @@ public class PlcServiceImpl implements PlcService {
     @Override
     public Mono<Map<String, Object>> start() {
         return Mono.fromCallable(() -> {
+            // fixme plc连接启动处理
             return null;
         }).doOnSuccess(it -> {
             status = RUNNING;
             startDateTime = new Date();
-            error = null;
-        }).doOnError(e -> {
-            status = ERROR;
-            error = e;
-        }).then(info());
-    }
-
-    @Override
-    public Mono<Map<String, Object>> stop() {
-        return Mono.fromCallable(() -> {
-            return null;
-        }).doOnSuccess(it -> {
-            status = STOPPED;
             error = null;
         }).doOnError(e -> {
             status = ERROR;

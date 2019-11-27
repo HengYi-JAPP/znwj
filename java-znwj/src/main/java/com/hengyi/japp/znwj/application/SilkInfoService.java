@@ -3,7 +3,7 @@ package com.hengyi.japp.znwj.application;
 import com.google.inject.ImplementedBy;
 import com.hengyi.japp.znwj.application.internal.SilkInfoServiceImpl;
 import com.hengyi.japp.znwj.domain.SilkInfo;
-import reactor.core.publisher.Mono;
+import com.hengyi.japp.znwj.interfaces.python.DetectResult;
 
 import java.nio.file.Path;
 import java.util.Collection;
@@ -14,7 +14,7 @@ import java.util.Collection;
 @ImplementedBy(SilkInfoServiceImpl.class)
 public interface SilkInfoService {
 
-    Mono<SilkInfo> preapareDetectData(SilkInfo silkInfo, Path imgPath);
+    SilkInfo add(DetectResult detectResult);
 
     Collection<SilkInfo> list();
 
@@ -22,7 +22,5 @@ public interface SilkInfoService {
 
     SilkInfo find(String code);
 
-    void start();
-
-    void stop();
+    void cleanUp();
 }

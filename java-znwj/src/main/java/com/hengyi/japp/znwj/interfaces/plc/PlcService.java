@@ -20,6 +20,4 @@ public interface PlcService {
     Mono<Map<String, Object>> info();
 
     Mono<Map<String, Object>> start();
-
-    Mono<Map<String, Object>> stop();
 }

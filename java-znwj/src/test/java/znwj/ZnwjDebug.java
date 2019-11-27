@@ -36,7 +36,7 @@ public class ZnwjDebug {
             silkInfo.setId(Jcodec.uuid58());
             silkInfo.setCode(Jcodec.uuid58());
             final DetectResult detectResult = new DetectResult();
-            detectResult.setClientIdentifier(Jcodec.uuid58());
+//            detectResult.setClientIdentifier(Jcodec.uuid58());
             detectResult.setCode(silkInfo.getCode());
             silkInfo.add(detectResult);
             final JsonObject message = Constant.silkInfoWebsocketMessage(silkInfo);

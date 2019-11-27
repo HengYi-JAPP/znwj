@@ -11,6 +11,9 @@ import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 import lombok.SneakyThrows;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -81,6 +84,16 @@ public class ZnwjModule extends AbstractModule {
 
     @Provides
     @Singleton
+    @Named("dbPath")
+    private Path dbPath(@Named("vertxConfig") JsonObject vertxConfig, @Named("rootPath") Path rootPath) {
+        return ofNullable(vertxConfig.getString("dbPath"))
+                .filter(J::nonBlank)
+                .map(Path::of)
+                .orElseGet(() -> rootPath.resolve("db"));
+    }
+
+    @Provides
+    @Singleton
     @Named("plcConfig")
     private JsonObject plcConfig(@Named("vertxConfig") JsonObject vertxConfig) {
         return vertxConfig.getJsonObject("plc", new JsonObject());
@@ -88,16 +101,9 @@ public class ZnwjModule extends AbstractModule {
 
     @Provides
     @Singleton
-    @Named("cameraConfig")
-    private JsonObject cameraConfig(@Named("vertxConfig") JsonObject vertxConfig) {
-        return vertxConfig.getJsonObject("camera", new JsonObject());
-    }
-
-    @Provides
-    @Singleton
-    @Named("detectConfig")
+    @Named("pythonConfig")
     private JsonObject detectConfig(@Named("vertxConfig") JsonObject vertxConfig) {
-        return vertxConfig.getJsonObject("detect", new JsonObject());
+        return vertxConfig.getJsonObject("python", new JsonObject());
     }
 
     @Provides
@@ -105,16 +111,6 @@ public class ZnwjModule extends AbstractModule {
     @Named("silkCacheSpec")
     private String silkCacheSpec(@Named("vertxConfig") JsonObject vertxConfig) {
         return vertxConfig.getString("silkCacheSpec", "maximumSize=100");
-    }
-
-    @Provides
-    @Singleton
-    @Named("dbPath")
-    private Path dbPath(@Named("vertxConfig") JsonObject vertxConfig, @Named("rootPath") Path rootPath) {
-        return ofNullable(vertxConfig.getString("dbPath"))
-                .filter(J::nonBlank)
-                .map(Path::of)
-                .orElseGet(() -> rootPath.resolve("db"));
     }
 
     @Provides
@@ -134,5 +130,17 @@ public class ZnwjModule extends AbstractModule {
             be.complete(true);
         });
         return sockJSHandler;
+    }
+
+    @SneakyThrows(MqttException.class)
+    @Provides
+    @Singleton
+    private MqttClient MqttClient(@Named("vertxConfig") JsonObject vertxConfig) {
+        final JsonObject mqttConfig = vertxConfig.getJsonObject("mqtt", new JsonObject());
+        final String host = mqttConfig.getString("host", "localhost");
+        final int port = mqttConfig.getInteger("port", 1883);
+        final MemoryPersistence persistence = new MemoryPersistence();
+        final String clientId = "JavaBackend";
+        return new MqttClient("tcp://" + host + ":" + port, clientId, persistence);
     }
 }

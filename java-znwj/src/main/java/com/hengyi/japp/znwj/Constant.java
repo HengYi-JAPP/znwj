@@ -1,5 +1,6 @@
 package com.hengyi.japp.znwj;
 
+import com.hengyi.japp.znwj.application.internal.BackendStatus;
 import com.hengyi.japp.znwj.domain.SilkInfo;
 import io.vertx.core.json.JsonObject;
 
@@ -20,5 +21,11 @@ public class Constant {
         return new JsonObject()
                 .put("type", "SilkInfoUpdate")
                 .put("data", JsonObject.mapFrom(silkInfo));
+    }
+
+    public static JsonObject backendInfoWebsocketMessage(BackendStatus status) {
+        return new JsonObject()
+                .put("type", "BackendInfoUpdate")
+                .put("data", status.toMap());
     }
 }
