@@ -31,6 +31,7 @@ CAMERAS = Cameras(CONFIG)
 
 def on_connect(client, userdata, flags, rc):
     logging.info("Connected with result code: " + mqtt.connack_string(rc))
+    # CAMERAS.subscribe(client)
     client.subscribe(DETECT_TOPIC, qos=1)
 
 
@@ -43,13 +44,10 @@ def on_message(client, userdata, msg):
     logging.debug("Received message '" + str(msg.payload) + "' on topic '" + msg.topic + "' with QoS " + str(msg.qos))
     if msg.topic == DETECT_TOPIC:
         code = msg.payload.decode("utf-8")
-        CAMERAS.grab(code)
-        result = DETECTOR.detect(code)
-        client.publish(DETECT_RESULT_TOPIC, result)
+        CAMERAS.grab_by_code(code)
+        # result = DETECTOR.detect(code)
+        # client.publish(DETECT_RESULT_TOPIC, result)
 
-
-CAMERAS.grab('123')
-print('grab finish')
 
 CLIENT = mqtt.Client('detect')
 CLIENT.on_connect = on_connect

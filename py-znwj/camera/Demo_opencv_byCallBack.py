@@ -11,8 +11,9 @@ import time
 
 import cv2
 import numpy
-from camera.ImageConvert import *
-from camera.MVSDK import *
+
+from camera.dahua.ImageConvert import *
+from camera.dahua.MVSDK import *
 
 g_cameraStatusUserInfo = b"statusInfo"
 g_Image_Grabbing_Timer = 60  # unit : s

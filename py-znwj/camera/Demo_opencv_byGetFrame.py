@@ -14,8 +14,8 @@ import cv2
 import numpy
 from PIL import Image
 
-from camera.ImageConvert import *
-from camera.MVSDK import *
+from camera.dahua.ImageConvert import *
+from camera.dahua.MVSDK import *
 
 g_cameraStatusUserInfo = b"statusInfo"
 
@@ -549,7 +549,7 @@ def demo():
             streamSource.contents.release(streamSource)
             return -1
 
-            # 给转码所需的参数赋值
+        # 给转码所需的参数赋值
         imageParams = IMGCNV_SOpenParam()
         imageParams.dataSize = frame.contents.getImageSize(frame)
         imageParams.height = frame.contents.getImageHeight(frame)

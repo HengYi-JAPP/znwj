@@ -12,8 +12,8 @@ import datetime
 import struct
 import time
 
-from camera.ImageConvert import *
-from camera.MVSDK import *
+from camera.dahua.ImageConvert import *
+from camera.dahua.MVSDK import *
 
 g_cameraStatusUserInfo = b"statusInfo"
 
