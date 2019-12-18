@@ -1,8 +1,8 @@
 import logging
 import struct
 
-from camera.dahua.ImageConvert import *
-from camera.dahua.MVSDK import *
+from camera.sdk.ImageConvert import *
+from camera.sdk.MVSDK import *
 
 
 class BITMAPFILEHEADER(Structure):
@@ -47,16 +47,14 @@ def enumCameras():
     system = pointer(GENICAM_System())
     nRet = GENICAM_getSystemInstance(byref(system))
     if (nRet != 0):
-        logging.error("getSystemInstance fail!")
-        return None, None
+        raise Exception("getSystemInstance fail!")
 
     # 发现相机
     cameraList = pointer(GENICAM_Camera())
     cameraCnt = c_uint()
     nRet = system.contents.discovery(system, byref(cameraList), byref(cameraCnt), c_int(GENICAM_EProtocolType.typeAll));
     if (nRet != 0):
-        logging.error("discovery fail!")
-        return None, None
+        raise Exception("discovery fail!")
     elif cameraCnt.value < 1:
         logging.error("discovery no camera!")
         return None, None
@@ -68,12 +66,12 @@ def enumCameras():
 def save_image_file_by_frame(frame, path):
     nRet = frame.contents.valid(frame)
     if (nRet != 0):
-        logging.error("frame is invalid!")
         # 释放驱动图像缓存资源
         frame.contents.release(frame)
-        return
+        logging.error("frame is invalid!")
+        raise Exception("frame is invalid!")
 
-        # 将裸数据图像拷出
+    # 将裸数据图像拷出
     imageSize = frame.contents.getImageSize(frame)
     buffAddr = frame.contents.getImage(frame)
     frameBuff = c_buffer(b'\0', imageSize)
@@ -103,7 +101,7 @@ def save_image_file_by_frame(frame, path):
     if convertParams.pixelForamt == EPixelType.gvspPixelMono8:
         # 初始化调色板rgbQuad 实际应用中 rgbQuad 只需初始化一次
         for i in range(0, 256):
-            rgbQuad[i].rgbBlue = rgbQuad[i].rgbGreen = rgbQuad[i].rgbRed = i;
+            rgbQuad[i].rgbBlue = rgbQuad[i].rgbGreen = rgbQuad[i].rgbRed = i
 
         uRgbQuadLen = sizeof(RGBQUAD) * 256
         bmpFileHeader.bfSize = sizeof(bmpFileHeader) + sizeof(bmpInfoHeader) + uRgbQuadLen + convertParams.dataSize

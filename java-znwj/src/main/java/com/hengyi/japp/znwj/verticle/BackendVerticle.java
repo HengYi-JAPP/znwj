@@ -3,50 +3,58 @@ package com.hengyi.japp.znwj.verticle;
 import com.google.inject.Inject;
 import com.hengyi.japp.znwj.ZnwjModule;
 import com.hengyi.japp.znwj.application.BackendService;
-import com.hengyi.japp.znwj.interfaces.python.DetectResult;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.eventbus.Message;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Mono;
+import org.eclipse.paho.client.mqttv3.*;
 
-import static com.github.ixtf.japp.core.Constant.MAPPER;
+import static com.hengyi.japp.znwj.Constant.DETECT_RESULT_TOPIC;
+import static com.hengyi.japp.znwj.Constant.DETECT_TOPIC;
 
 /**
  * @author jzb 2019-10-24
  */
 @Slf4j
-public class BackendVerticle extends AbstractVerticle {
-    public static final String NEXT_RFID_NUM = "znwj:backend:NEXT_RFID_NUM";
-    public static final String DETECT_RESULT = "znwj:backend:DETECT_RESULT";
+public class BackendVerticle extends AbstractVerticle implements MqttCallback {
+    @Inject
+    private MqttClient mqttClient;
     @Inject
     private BackendService backendService;
 
     @Override
     public void start() throws Exception {
         ZnwjModule.injectMembers(this);
-        vertx.eventBus().consumer(NEXT_RFID_NUM, this::handleRfidNum);
-        vertx.eventBus().consumer(DETECT_RESULT, this::handleDetectResult);
+        final MqttConnectOptions connOpts = new MqttConnectOptions();
+        connOpts.setAutomaticReconnect(true);
+        connOpts.setCleanSession(true);
+        mqttClient.setCallback(this);
+        mqttClient.connect(connOpts);
+        mqttClient.subscribe(DETECT_TOPIC, 1);
+        mqttClient.subscribe(DETECT_RESULT_TOPIC, 1);
     }
 
-    private void handleRfidNum(Message<Integer> reply) {
-        backendService.handleRfidNum(reply.body())
-                .doOnError(err -> {
-                    log.error("", err);
-                    reply.fail(400, err.getMessage());
-                })
-                .doOnSuccess(reply::reply)
-                .subscribe();
+    @Override
+    public void messageArrived(String topic, MqttMessage message) throws Exception {
+        switch (topic) {
+            case DETECT_TOPIC: {
+                backendService.handleRfid(message);
+                return;
+            }
+            case DETECT_RESULT_TOPIC: {
+                backendService.handleDetectResult(message);
+                return;
+            }
+            default: {
+                log.error("topic={} no handler", topic);
+            }
+        }
     }
 
-    private void handleDetectResult(Message<byte[]> reply) {
-        Mono.fromCallable(() -> MAPPER.readValue(reply.body(), DetectResult.class))
-                .flatMap(backendService::handleDetectResult)
-                .doOnError(err -> {
-                    log.error("", err);
-                    reply.fail(400, err.getMessage());
-                })
-                .doOnSuccess(reply::reply)
-                .subscribe();
+    @Override
+    public void connectionLost(Throwable cause) {
+        log.error("", cause);
     }
 
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken token) {
+    }
 }

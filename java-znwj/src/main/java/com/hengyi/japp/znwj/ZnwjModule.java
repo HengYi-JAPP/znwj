@@ -64,7 +64,14 @@ public class ZnwjModule extends AbstractModule {
     @Singleton
     @Named("rootPath")
     private Path rootPath() {
-        return Path.of(System.getProperty("znwj.path", "/home/znwj"));
+        String path = System.getProperty("znwj.path");
+        if (J.isBlank(path)) {
+            path = System.getenv("ZNWJ_PATH");
+        }
+        if (J.isBlank(path)) {
+            path = "/home/znwj";
+        }
+        return Path.of(path);
     }
 
     @SneakyThrows

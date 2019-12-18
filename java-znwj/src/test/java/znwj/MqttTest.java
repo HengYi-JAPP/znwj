@@ -9,7 +9,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 /**
  * @author jzb 2019-11-19
  */
-public class Test {
+public class MqttTest {
 
     @SneakyThrows
     public static void main(String[] args) {
@@ -40,7 +40,6 @@ public class Test {
 
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken token) {
-
                 }
             });
 
@@ -49,13 +48,13 @@ public class Test {
             sampleClient.subscribe("/znwj/detect/result", 1);
 
 
-            MqttMessage message = new MqttMessage(content.getBytes());
-            message.setQos(qos);
-            sampleClient.publish(topic, message);
+//            MqttMessage message = new MqttMessage(content.getBytes());
+//            message.setQos(qos);
+//            sampleClient.publish(topic, message);
 //            sampleClient.disconnect();
 //            System.out.println("Disconnected");
 //            System.exit(0);
-            System.in.read();
+//            System.in.read();
         } catch (MqttException me) {
             System.out.println("reason " + me.getReasonCode());
             System.out.println("msg " + me.getMessage());

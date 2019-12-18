@@ -13,8 +13,6 @@ import java.util.Map;
 @ImplementedBy(PlcServiceImpl.class)
 public interface PlcService {
 
-    void nextRfidNum(int rfidNum);
-
     Mono<SilkInfo> handleEliminate(SilkInfo silkInfo);
 
     Mono<Map<String, Object>> info();

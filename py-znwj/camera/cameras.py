@@ -1,7 +1,7 @@
 import asyncio
 
-from camera.Camera import Camera
-from camera.dahua.util import enumCameras
+from camera.camera import Camera
+from camera.sdk.util import enumCameras
 
 
 class Cameras(object):
@@ -12,7 +12,7 @@ class Cameras(object):
         if cameraCnt is None:
             return
 
-        for it in cameraList[0:1]:
+        for it in cameraList:
             camera = Camera(config, it)
             self.__cameras.append(camera)
 

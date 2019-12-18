@@ -88,11 +88,10 @@ public class PythonServiceImpl implements PythonService, MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         final BackendService backendService = getInstance(BackendService.class);
-        backendService.handleDetectResult(message.getPayload()).subscribe();
+        backendService.handleDetectResult(message).subscribe();
     }
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-
     }
 }

@@ -31,7 +31,7 @@ public class MockResource {
 
     public void mockOne() {
         final int rfidNum = random.nextInt();
-        backendService.handleRfidNum(rfidNum).subscribe();
+//        backendService.handleRfid(rfidNum).subscribe();
     }
 
     @GET

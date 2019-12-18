@@ -1,5 +1,6 @@
 package com.hengyi.japp.znwj.application.internal;
 
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.hengyi.japp.znwj.application.BackendService;
@@ -10,9 +11,13 @@ import com.hengyi.japp.znwj.interfaces.python.DetectResult;
 import com.hengyi.japp.znwj.interfaces.python.PythonService;
 import com.hengyi.japp.znwj.interfaces.riamb.RiambService;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.Map;
 
@@ -25,6 +30,7 @@ import static com.hengyi.japp.znwj.Constant.*;
 @Slf4j
 @Singleton
 public class BackendServiceImpl implements BackendService {
+    private final Map<Integer, Mono<SilkInfo>> rfidReadedMap = Maps.newConcurrentMap();
     private final Vertx vertx;
     private final PlcService plcService;
     private final RiambService riambService;
@@ -54,22 +60,29 @@ public class BackendServiceImpl implements BackendService {
     }
 
     @Override
-    public Mono<Void> handleRfidNum(int rfidNum) {
-        return riambService.fetch(rfidNum).flatMap(silkInfo -> {
-            if (silkInfo.hasMesAutoException()) {
-                return plcService.handleEliminate(silkInfo);
-            } else {
-                return pythonService.detect(silkInfo);
-            }
-        }).doOnError(err -> log.error("", err)).then();
+    public void handleRfid(MqttMessage message) {
+        final Buffer buffer = Buffer.buffer(message.getPayload());
+        final String rfidValue = buffer.toString();
+        final int rfidNum = NumberUtils.toInt(rfidValue);
+        // rfid 读取失败时返回为 0
+        if (rfidNum > 0) {
+            rfidReadedMap.compute(rfidNum, (k, v) -> {
+                if (v != null) {
+                    return v;
+                }
+                return riambService.fetch(k);
+            });
+        }
     }
 
     @Override
-    public Mono<Void> handleDetectResult(byte[] bytes) {
-        return Mono.fromCallable(() -> MAPPER.readValue(bytes, DetectResult.class))
+    public Mono<SilkInfo> handleDetectResult(MqttMessage message) {
+        return Mono.fromCallable(() -> {
+            final byte[] payload = message.getPayload();
+            return MAPPER.readValue(payload, DetectResult.class);
+        }).subscribeOn(Schedulers.elastic())
                 .map(silkInfoService::add)
-                .flatMap(plcService::handleEliminate)
-                .then();
+                .flatMap(plcService::handleEliminate);
     }
 
     @Override

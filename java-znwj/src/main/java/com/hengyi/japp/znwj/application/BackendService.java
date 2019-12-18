@@ -3,6 +3,7 @@ package com.hengyi.japp.znwj.application;
 import com.google.inject.ImplementedBy;
 import com.hengyi.japp.znwj.application.internal.BackendServiceImpl;
 import com.hengyi.japp.znwj.domain.SilkInfo;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
@@ -15,9 +16,9 @@ public interface BackendService {
 
     Mono<Map<String, Object>> start();
 
-    Mono<Void> handleRfidNum(int rfidNum);
+    void handleRfid(MqttMessage rfidValue);
 
-    Mono<Void> handleDetectResult(byte[] bytes);
+    Mono<SilkInfo> handleDetectResult(MqttMessage message);
 
     void updateStatistic(SilkInfo silkInfo);
 

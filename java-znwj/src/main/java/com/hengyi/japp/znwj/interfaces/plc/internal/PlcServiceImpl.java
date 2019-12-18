@@ -34,12 +34,6 @@ public class PlcServiceImpl implements PlcService {
     }
 
     @Override
-    public void nextRfidNum(int rfidNum) {
-        final BackendService backendService = getInstance(BackendService.class);
-        backendService.handleRfidNum(rfidNum).subscribe();
-    }
-
-    @Override
     public Mono<SilkInfo> handleEliminate(SilkInfo silkInfo) {
         if (silkInfo.isEliminateHandled()) {
             return Mono.just(silkInfo);

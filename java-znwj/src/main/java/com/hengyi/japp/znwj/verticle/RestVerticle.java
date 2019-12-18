@@ -18,7 +18,6 @@ public class RestVerticle extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
-        start();
         final List<Future> futures = Jvertx.resolve(RestResolver.class)
                 .map(it -> it.consumer(vertx, ZnwjModule::getInstance))
                 .collect(toList());
