@@ -1,32 +1,31 @@
 import logging
-import time
 
 import yaml
+from dahua.cameras import Cameras
 
-from camera.cameras import Cameras
+from camera_message import CameraMessage
 from constant import DETECT_RESULT_TOPIC
-from daemon.plc_message import PlcMessage
-from daemon.sick_message import SickMessage
 from detect.detector import Detector
+from plc_message import PlcMessage
+from sick_message import SickMessage
 
 
 class PyZnwj(object):
-    def __init__(self, path):
-        self._running = False
+    def __init__(self, path, loop):
         self._path = path
-        with open(path + '/config.yml', 'r') as f:
+        self._loop = loop
+        with open(path + '/config.yml', 'r', encoding='utf8') as f:
             self.__yaml = yaml.safe_load(f)
         logging.basicConfig(level=self.config('logging.level', logging.WARNING), format=self.config('logging.format'))
         # 当前处理中的 rfid
         # 串行处理 rfid
         # socket 等待读取
-        self.__rfid = None
-
-        if self.config('sick'):
-            self._sick_message = SickMessage(self)
+        self._running = False
 
         if self.config('cameras'):
-            self._cameras = Cameras(self)
+            self._camera_msg = Cameras(self)
+        else:
+            self._camera_msg = CameraMessage(self)
 
         if self.config('detector'):
             self._detector = Detector(self)
@@ -34,23 +33,17 @@ class PyZnwj(object):
         if self.config('plc'):
             self._plc = PlcMessage(self)
 
-    def handle_next_rfid(self, rfid):
-        if not self._running:
-            return
-        if rfid == self.__rfid:
-            return
-        time.sleep(3)
-        logging.debug('rfid [{}],[{}],[{}]'.format(rfid, type(rfid), len(rfid)))
-        self.__rfid = rfid
-        if not hasattr(self, '_cameras'):
-            return
-        self._cameras.handle_next_rfid(rfid)
+        if self.config('sick'):
+            self._sick_msg = SickMessage(self)
+            loop.create_task(self._sick_msg.start())
+
+    def handle_next_detect(self, rfid):
         if not hasattr(self, '_detector'):
             return
         result = self._detector.detect(rfid)
         if not hasattr(self, '_plc'):
             self._plc.handle_detect_result(result)
-        self._mqtt.publish(DETECT_RESULT_TOPIC, result)
+        self._mqttc.publish(DETECT_RESULT_TOPIC, result)
 
     def config(self, attrs, default=None):
         ret = None

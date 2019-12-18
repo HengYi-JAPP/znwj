@@ -1,11 +1,15 @@
+import asyncio
 import logging
 import os
 import sys
+import threading
 
 import paho.mqtt.client as mqtt
 
-from constant import APP, DETECT_TOPIC, ERROR_TOPIC, START_TOPIC, STOP_TOPIC, DETECT_RESULT_TOPIC
+from constant import APP, DETECT_TOPIC, ERROR_TOPIC, START_TOPIC, STOP_TOPIC
 from py_znwj import PyZnwj
+
+loop = asyncio.get_event_loop()
 
 if len(sys.argv) == 1:
     path = os.getenv('ZNWJ_PATH')
@@ -14,24 +18,19 @@ if len(sys.argv) == 1:
 else:
     path = sys.argv[1]
 
-app = PyZnwj(path)
-app._mqtt = mqttc = mqtt.Client(APP)
+app = PyZnwj(path, loop)
+app._mqttc = mqttc = mqtt.Client(APP)
 
 
 def on_connect(client, userdata, rc):
     logging.info('mqtt on_connect')
-    app._running = True
-
-
-def on_subscribe(client, obj, mid, granted_qos):
-    print("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 
 def on_message(client, userdata, msg):
     logging.debug(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
     if DETECT_TOPIC == msg.topic:
         code = msg.payload.decode("utf-8")
-        app.handle_next_rfid(code)
+        # app.handle_next_rfid(code)
 
     elif START_TOPIC == msg.topic:
         app._running = True
@@ -51,13 +50,14 @@ def on_disconnect(client, userdata, rc):
 
 mqttc.on_message = on_message
 mqttc.on_connect = on_connect
-mqttc.on_subscribe = on_subscribe
 mqttc.on_disconnect = on_disconnect
 mqttc.connect(app.config('mqtt.host'), app.config('mqtt.port', 1883))
 mqttc.subscribe(DETECT_TOPIC, qos=1)
 mqttc.subscribe(ERROR_TOPIC, qos=1)
 mqttc.subscribe(START_TOPIC, qos=1)
 mqttc.subscribe(STOP_TOPIC, qos=1)
-mqttc.publish(DETECT_RESULT_TOPIC, b'1234')
-app._running = True
-mqttc.loop_forever()
+daemon = threading.Thread(target=mqttc.loop_forever, name='mqttc')
+daemon.setDaemon(True)
+daemon.start()
+
+loop.run_forever()

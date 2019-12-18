@@ -1,8 +1,8 @@
 import logging
 import struct
 
-from camera.sdk.ImageConvert import *
-from camera.sdk.MVSDK import *
+from dahua.sdk.ImageConvert import *
+from dahua.sdk.MVSDK import *
 
 
 class BITMAPFILEHEADER(Structure):
@@ -56,10 +56,8 @@ def enumCameras():
     if (nRet != 0):
         raise Exception("discovery fail!")
     elif cameraCnt.value < 1:
-        logging.error("discovery no camera!")
-        return None, None
+        return cameraCnt.value, []
     else:
-        logging.debug("cameraCnt: " + str(cameraCnt.value))
         return cameraCnt.value, cameraList
 
 
