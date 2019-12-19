@@ -41,9 +41,9 @@ def openCamera(camera, deviceLinkNotify, status_info=b"statusInfo"):
 # 注册相机连接状态回调
 def subscribeCameraStatus(camera, connectCallBackFuncEx, status_info=b"statusInfo"):
     # 注册上下线通知
-    eventSubscribe = pointer(GENICAM_EventSubscribe())
     eventSubscribeInfo = GENICAM_EventSubscribeInfo()
     eventSubscribeInfo.pCamera = pointer(camera)
+    eventSubscribe = pointer(GENICAM_EventSubscribe())
     nRet = GENICAM_createEventSubscribe(byref(eventSubscribeInfo), byref(eventSubscribe))
     if (nRet != 0):
         raise Exception("create eventSubscribe fail!")
@@ -103,16 +103,17 @@ def triggerSoftware(acqCtrl, streamSource):
     streamSource.contents.release(streamSource)
 
 
-# 开始拉流
-def startGrabbing(streamSource, onGetFrameEx, userInfo=b"test"):
+# 注册拉流回调函数 (该接口需要在开始拉流之前调用)
+def attachGrabbingEx(streamSource, onGetFrameEx, userInfo=b"test"):
     frameCallbackFuncEx = callbackFuncEx(onGetFrameEx)
-    # 注册拉流回调函数
     nRet = streamSource.contents.attachGrabbingEx(streamSource, frameCallbackFuncEx, userInfo)
     if (nRet != 0):
         # 释放相关资源
         streamSource.contents.release(streamSource)
         raise ("attachGrabbingEx fail!")
 
+
+def startGrabbing(streamSource):
     # 开始拉流
     nRet = streamSource.contents.startGrabbing(streamSource, c_ulonglong(0),
                                                c_int(GENICAM_EGrabStrategy.grabStrartegySequential))
@@ -206,26 +207,6 @@ class RGBQUAD(Structure):
         ('rgbRed', c_ubyte),
         ('rgbReserved', c_ubyte),
     ]
-
-
-# 枚举相机
-def enumCameras():
-    # 获取系统单例
-    system = pointer(GENICAM_System())
-    nRet = GENICAM_getSystemInstance(byref(system))
-    if (nRet != 0):
-        raise Exception("getSystemInstance fail!")
-
-    # 发现相机
-    cameraList = pointer(GENICAM_Camera())
-    cameraCnt = c_uint()
-    nRet = system.contents.discovery(system, byref(cameraList), byref(cameraCnt), c_int(GENICAM_EProtocolType.typeAll));
-    if (nRet != 0):
-        raise Exception("discovery fail!")
-    elif cameraCnt.value < 1:
-        return cameraCnt.value, []
-    else:
-        return cameraCnt.value, cameraList
 
 
 def save_image_file_by_frame(frame, path):

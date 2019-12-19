@@ -15,12 +15,12 @@ class Camera(object):
         self._error = False
         try:
             # 打开相机
-            self._eventSubscribe = openCamera(camera, self._deviceLinkNotify)
+            self._eventSubscribe = openCamera(camera, self._onDeviceLinkNotify)
             setSoftTriggerConf(camera)
             # 创建流对象
             self._streamSourceInfo, self._streamSource = createStreamSourceInfo(camera)
             # 开始拉流
-            startGrabbing(self._streamSource, self._onGetFrameEx)
+            startGrabbing(self._streamSource)
         except Exception as e:
             logging.error('open camera fail:' + str(e))
             self._error = True
@@ -42,11 +42,13 @@ class Camera(object):
         return 0
 
     # 相机连接状态回调函数
-    def _deviceLinkNotify(self, connectArg, linkInfo):
+    def _onDeviceLinkNotify(self, connectArg, linkInfo):
         if (EVType.offLine == connectArg.contents.m_event):
             print("camera has off line, userInfo [%s]" % (c_char_p(linkInfo).value))
+            # // 此处一般要销毁流对象、事件订阅对象， // 反注册流事件回调、相机事件回调、拉流回调，并停止拉
         elif (EVType.onLine == connectArg.contents.m_event):
             print("camera has on line, userInfo [%s]" % (c_char_p(linkInfo).value))
+            # // 此处一般要断开相机连接，重新连接相机， // 重新创建流对象、事件订阅对象, // 重新注册流事件回调、相机事件回调、拉流回调， // 重新开始拉
 
     def grabOne(self):
         camera = self._camera
