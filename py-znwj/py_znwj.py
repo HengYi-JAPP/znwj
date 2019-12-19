@@ -16,19 +16,11 @@ class PyZnwj(object):
         with open(path + '/config.yml', 'r', encoding='utf8') as f:
             self.__yaml = yaml.safe_load(f)
         logging.basicConfig(level=self.config('logging.level', logging.WARNING), format=self.config('logging.format'))
-        # 当前处理中的 rfid
-        # 串行处理 rfid
-        # socket 等待读取
+
         self._running = False
-
         self._camera_msg = CameraMessage(self)
-
-        if self.config('detector'):
-            self._detector = Detector(self)
-
-        if self.config('plc'):
-            self._plc = PlcMessage(self)
-
+        self._detector = Detector(self)
+        self._plc = PlcMessage(self)
         if self.config('sick'):
             self._sick_msg = SickMessage(self)
             loop.create_task(self._sick_msg.start())

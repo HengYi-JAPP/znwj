@@ -1,7 +1,7 @@
 
 
 class Detector(object):
-    def __init__(self, config):
+    def __init__(self, app):
         # self.__detector1 = Yolo(config)
         # self.__detector2 = resnet(config)
         pass
