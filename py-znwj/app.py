@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import platform
 import sys
 import threading
 
@@ -14,7 +15,10 @@ loop = asyncio.get_event_loop()
 if len(sys.argv) == 1:
     path = os.getenv('ZNWJ_PATH')
     if not path:
-        path = '/home/znwj'
+        if 'Linux' == print(platform.system()):
+            path = '/home/znwj'
+        else:
+            path = 'd:/znwj'
 else:
     path = sys.argv[1]
 
