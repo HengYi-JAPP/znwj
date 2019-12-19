@@ -1,69 +1,93 @@
+import datetime
+import logging
+
 from dahua.sdk.MVSDK import *
-from dahua.sdk.util import save_image_file_by_frame
-
-# 打开相机
-
-
-def openCamera(camera):
-    # 连接相机
-    nRet = camera.connect(camera, c_int(
-        GENICAM_ECameraAccessPermission.accessPermissionControl))
-    if (nRet != 0):
-        print("camera connect fail!")
-        return -1
-    else:
-        print("camera connect success.")
-
-    # 注册相机连接状态回调
-    # nRet = subscribeCameraStatus(camera)
-    # if ( nRet != 0 ):
-    #     print("subscribeCameraStatus fail!")
-    #     return -1
-
-    return 0
+from dahua.sdk.Util import save_image_file_by_frame, openCamera, streamSourceInfo, startGrabbing
 
 
 class Camera(object):
     def __init__(self, app, camera):
-        self._db_path = app.config('dbPath', '/home/znwj/db')
+        self._db_path = app.config('dbPath', 'd:/znwj/db')
         self._camera = camera
         self._key = str(camera.getKey(camera))
         self._vendor_name = str(camera.getVendorName(camera))
         self._model_name = str(camera.getModelName(camera))
         self._serial_number = str(camera.getSerialNumber(camera))
 
-        # 打开相机
-        nRet = openCamera(camera)
-        if (nRet != 0):
-            print("openCamera fail.")
-
-        # 创建流对象
-        self._streamSourceInfo = GENICAM_StreamSourceInfo()
-        self._streamSourceInfo.channelId = 0
-        self._streamSourceInfo.pCamera = pointer(self._camera)
-        self._streamSource = pointer(GENICAM_StreamSource())
-        nRet = GENICAM_createStreamSource(
-            pointer(self._streamSourceInfo), byref(self._streamSource))
-        if (nRet != 0):
-            raise Exception("create StreamSource fail!")
-
-        # 开始拉流
-        nRet = self._streamSource.contents.startGrabbing(self._streamSource, c_ulonglong(0),
-                                                         c_int(GENICAM_EGrabStrategy.grabStrartegySequential))
-        if (nRet != 0):
-            # 释放相关资源
-            self._streamSource.contents.release(self._streamSource)
-            raise Exception("startGrabbing fail!")
+        self._error = False
+        try:
+            # 打开相机
+            self._eventSubscribe = openCamera(camera, self._deviceLinkNotify)
+            # 创建流对象
+            self._streamSourceInfo, self._streamSource = streamSourceInfo(camera)
+            # 开始拉流
+            startGrabbing(self._streamSource, self._onGetFrameEx)
+        except Exception as e:
+            logging.error('', e.args)
+            self._error = True
 
     def grab_by_rfid(self, rfid):
+        streamSource = self._streamSource
+        # 主动取图
         frame = pointer(GENICAM_Frame())
-        nRet = self._streamSource.contents.getFrame(
-            self._streamSource, byref(frame), c_uint(1000))
+        nRet = streamSource.contents.getFrame(streamSource, byref(frame), c_uint(1000))
         if (nRet != 0):
-            # 释放相关资源
-            self._streamSource.contents.release(self._streamSource)
             raise Exception("SoftTrigger getFrame fail! timeOut [1000]ms")
+        else:
+            print("SoftTrigger getFrame success BlockId = " + str(frame.contents.getBlockId(frame)))
+            print("get frame time: " + str(datetime.datetime.now()))
 
         save_image_file_by_frame(
             frame, self._db_path + '/' + rfid + '/original/' + self._serial_number + '.bmp')
         return 0
+
+    # 相机连接状态回调函数
+    def _deviceLinkNotify(self, connectArg, linkInfo):
+        if (EVType.offLine == connectArg.contents.m_event):
+            print("camera has off line, userInfo [%s]" % (c_char_p(linkInfo).value))
+        elif (EVType.onLine == connectArg.contents.m_event):
+            print("camera has on line, userInfo [%s]" % (c_char_p(linkInfo).value))
+
+    def grabOne(self, camera):
+        streamSource = self._streamSource
+        # 创建control节点
+        acqCtrlInfo = GENICAM_AcquisitionControlInfo()
+        acqCtrlInfo.pCamera = pointer(camera)
+        acqCtrl = pointer(GENICAM_AcquisitionControl())
+        nRet = GENICAM_createAcquisitionControl(pointer(acqCtrlInfo), byref(acqCtrl))
+        if (nRet != 0):
+            # 释放相关资源
+            streamSource.contents.release(streamSource)
+            raise Exception("create AcquisitionControl fail!")
+
+        # 执行一次软触发
+        trigSoftwareCmdNode = acqCtrl.contents.triggerSoftware(acqCtrl)
+        nRet = trigSoftwareCmdNode.execute(byref(trigSoftwareCmdNode))
+        if (nRet != 0):
+            # 释放相关资源
+            trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
+            acqCtrl.contents.release(acqCtrl)
+            streamSource.contents.release(streamSource)
+            raise Exception("Execute triggerSoftware fail!")
+
+            # 释放相关资源
+        trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
+        acqCtrl.contents.release(acqCtrl)
+
+        return 0
+
+    # 取流回调函数Ex
+    def _onGetFrameEx(self, frame, userInfo):
+        nRet = frame.contents.valid(frame)
+        if (nRet != 0):
+            print("frame is invalid!")
+            # 释放驱动图像缓存资源
+            frame.contents.release(frame)
+            return
+
+        print("BlockId = %d userInfo = %s" % (frame.contents.getBlockId(frame), c_char_p(userInfo).value))
+        # 此处客户应用程序应将图像拷贝出使用
+        '''
+        '''
+        # 释放驱动图像缓存资源
+        frame.contents.release(frame)

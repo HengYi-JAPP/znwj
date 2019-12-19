@@ -15,7 +15,7 @@ loop = asyncio.get_event_loop()
 if len(sys.argv) == 1:
     path = os.getenv('ZNWJ_PATH')
     if not path:
-        if 'Linux' == print(platform.system()):
+        if 'Linux' == platform.system():
             path = '/home/znwj'
         else:
             path = 'd:/znwj'
