@@ -7,12 +7,9 @@ Created on 2017-10-25
 '''
 
 import datetime
-import struct
 import time
 
-from dahua.sdk.ImageConvert import *
-from dahua.sdk.MVSDK import *
-from dahua.sdk.Util import enumCameras
+from dahua.sdk.Util import *
 
 g_cameraStatusUserInfo = b"statusInfo"
 
