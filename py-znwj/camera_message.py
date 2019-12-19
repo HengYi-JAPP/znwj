@@ -6,9 +6,7 @@ from rx import operators as ops
 from rx.scheduler import ThreadPoolScheduler
 from rx.subject import Subject
 
-from dahua.camera import Camera
-from dahua.sdk.MVSDK import *
-from dahua.util import enumCameras
+from dahua.camera_ctrl import CameraCtrl
 
 optimal_thread_count = multiprocessing.cpu_count()
 pool_scheduler = ThreadPoolScheduler(optimal_thread_count)
@@ -23,7 +21,7 @@ def intense_calculation(rfid):
 class CameraMessage(object):
     def __init__(self, app):
         self._app = app
-        self._cameras = []
+        self._cameras = CameraCtrl(app).get_cameras()
         self._sink = Subject()
         self._sink.pipe(
             ops.observe_on(pool_scheduler),
@@ -31,15 +29,6 @@ class CameraMessage(object):
         ).subscribe(
             on_next=lambda it: print('{} handled {}'.format('CameraMessage', it))
         )
-        # 发现相机
-        cameraCnt, cameraList = enumCameras()
-        if cameraCnt is None:
-            return
-        for camera in cameraList:
-            # 连接相机
-            nRet = camera.connect(camera, c_int(GENICAM_ECameraAccessPermission.accessPermissionControl))
-            if (nRet == 0):
-                self._cameras.append(Camera(app, camera))
 
     def handle_next_rfid(self, rfid):
         self._sink.on_next(rfid)

@@ -12,7 +12,7 @@ class CameraCtrl(object):
         for camera in cameraList:
             self._cameras.append(Camera(app, camera))
 
-    def get_cameras(self, rfid):
+    def get_cameras(self):
         ret = []
         for camera in self._cameras:
             if not camera._error:
