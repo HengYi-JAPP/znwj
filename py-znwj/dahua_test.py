@@ -224,17 +224,8 @@ def demo():
     # 打开相机
     openCamera(camera)
     subscribeCameraStatus(camera, deviceLinkNotify, g_cameraStatusUserInfo)
-
     # 创建流对象
-    streamSourceInfo = GENICAM_StreamSourceInfo()
-    streamSourceInfo.channelId = 0
-    streamSourceInfo.pCamera = pointer(camera)
-
-    streamSource = pointer(GENICAM_StreamSource())
-    nRet = GENICAM_createStreamSource(pointer(streamSourceInfo), byref(streamSource))
-    if (nRet != 0):
-        print("create StreamSource fail!")
-        return -1
+    streamSourceInfo, streamSource = createStreamSourceInfo(camera)
 
     # 通用属性设置:设置触发模式为off --根据属性类型，直接构造属性节点。如触发模式是 enumNode，构造enumNode节点
     # 自由拉流：TriggerMode 需为 off
@@ -262,21 +253,9 @@ def demo():
 
     # 注册拉流回调函数
     userInfo = b"test"
-    nRet = streamSource.contents.attachGrabbingEx(streamSource, frameCallbackFuncEx, userInfo)
-    if (nRet != 0):
-        print("attachGrabbingEx fail!")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
-
+    attachGrabbingEx(streamSource, onGetFrameEx, userInfo)
     # 开始拉流
-    nRet = streamSource.contents.startGrabbing(streamSource, c_ulonglong(0),
-                                               c_int(GENICAM_EGrabStrategy.grabStrartegySequential))
-    if (nRet != 0):
-        print("startGrabbing fail!")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
+    startGrabbing(streamSource)
 
     # 自由拉流3秒
     time.sleep(3)
