@@ -97,29 +97,6 @@ frameCallbackFunc = callbackFunc(onGetFrame)
 frameCallbackFuncEx = callbackFuncEx(onGetFrameEx)
 
 
-# 注册相机连接状态回调
-def subscribeCameraStatus(camera):
-    # 注册上下线通知
-    eventSubscribe = pointer(GENICAM_EventSubscribe())
-    eventSubscribeInfo = GENICAM_EventSubscribeInfo()
-    eventSubscribeInfo.pCamera = pointer(camera)
-    nRet = GENICAM_createEventSubscribe(byref(eventSubscribeInfo), byref(eventSubscribe))
-    if (nRet != 0):
-        print("create eventSubscribe fail!")
-        return -1
-
-    nRet = eventSubscribe.contents.subscribeConnectArgsEx(eventSubscribe, connectCallBackFuncEx, g_cameraStatusUserInfo)
-    if (nRet != 0):
-        print("subscribeConnectArgsEx fail!")
-        # 释放相关资源
-        eventSubscribe.contents.release(eventSubscribe)
-        return -1
-
-        # 不再使用时，需释放相关资源
-    eventSubscribe.contents.release(eventSubscribe)
-    return 0
-
-
 # 反注册相机连接状态回调
 def unsubscribeCameraStatus(camera):
     # 反注册上下线通知
@@ -261,25 +238,6 @@ def setLineTriggerConf(camera):
     # 需要释放Node资源
     trigActivationEnumNode.release(byref(trigActivationEnumNode))
     acqCtrl.contents.release(acqCtrl)
-    return 0
-
-
-# 打开相机
-def openCamera(camera):
-    # 连接相机
-    nRet = camera.connect(camera, c_int(GENICAM_ECameraAccessPermission.accessPermissionControl))
-    if (nRet != 0):
-        print("camera connect fail!")
-        return -1
-    else:
-        print("camera connect success.")
-
-    # 注册相机连接状态回调
-    nRet = subscribeCameraStatus(camera)
-    if (nRet != 0):
-        print("subscribeCameraStatus fail!")
-        return -1
-
     return 0
 
 
@@ -518,7 +476,7 @@ def demo():
     camera = cameraList[0]
 
     # 打开相机
-    nRet = openCamera(camera)
+    nRet = openCamera(camera, deviceLinkNotify, g_cameraStatusUserInfo)
     if (nRet != 0):
         print("openCamera fail.")
         return -1;
