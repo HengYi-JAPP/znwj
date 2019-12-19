@@ -7,21 +7,21 @@ class Camera(object):
     def __init__(self, app, camera):
         self._db_path = app.config('dbPath', app.__path + '/db')
         self._camera = camera
-        self._key = str(camera.getKey(camera))
-        self._vendor_name = str(camera.getVendorName(camera))
-        self._model_name = str(camera.getModelName(camera))
-        self._serial_number = str(camera.getSerialNumber(camera))
 
         self._error = False
         try:
             # 打开相机
             self._eventSubscribe = openCamera(camera, self._deviceLinkNotify)
+            self._key = str(camera.getKey(camera))
+            self._vendor_name = str(camera.getVendorName(camera))
+            self._model_name = str(camera.getModelName(camera))
+            self._serial_number = str(camera.getSerialNumber(camera))
             # 创建流对象
             # self._streamSourceInfo, self._streamSource = streamSourceInfo(camera)
             # 开始拉流
             # startGrabbing(self._streamSource, self._onGetFrameEx)
         except Exception as e:
-            logging.error('', e.args)
+            logging.error('open camera fail:' + str(e))
             self._error = True
 
     def grab_by_rfid(self, rfid):
