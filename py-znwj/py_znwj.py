@@ -1,7 +1,6 @@
 import logging
 
 import yaml
-from dahua.cameras import Cameras
 
 from camera_message import CameraMessage
 from constant import DETECT_RESULT_TOPIC
@@ -22,10 +21,7 @@ class PyZnwj(object):
         # socket 等待读取
         self._running = False
 
-        if self.config('cameras'):
-            self._camera_msg = Cameras(self)
-        else:
-            self._camera_msg = CameraMessage(self)
+        self._camera_msg = CameraMessage(self)
 
         if self.config('detector'):
             self._detector = Detector(self)

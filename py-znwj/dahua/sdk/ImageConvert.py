@@ -9,12 +9,13 @@ from ctypes import *
 
 # 加载ImageConvert库
 # 32bit
-# ImageConvertdll = cdll.LoadLibrary("./dll/x86/libImageConvert.so")
+# ImageConvertdll = OleDLL("./dll/x86/ImageConvert.dll")
 # 64bit
-ImageConvertdll = cdll.LoadLibrary("libImageConvert.so")
-
+ImageConvertdll = OleDLL("D:/znwj/py-znwj/dahua/sdk/dll/x64/ImageConvert.dll")
 
 # 定义枚举类型
+
+
 def enum(**enums):
     return type('Enum', (), enums)
 
@@ -28,8 +29,9 @@ IMGCNV_EErr = enum(
     IMGCNV_NOT_SUPPORT=4,
 )
 
-
 # ImageConvert.h => struct tagIMGCNV_SOpenParam
+
+
 class IMGCNV_SOpenParam(Structure):
     _fields_ = [
         ('width', c_int),

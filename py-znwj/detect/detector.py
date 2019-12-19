@@ -1,4 +1,3 @@
-from detect.resnet.resnet import *
 
 
 class Detector(object):
