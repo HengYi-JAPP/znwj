@@ -12,15 +12,14 @@ def enumCameras():
     nRet = GENICAM_getSystemInstance(byref(system))
     if (nRet != 0):
         raise Exception("getSystemInstance fail!")
-
     # 发现相机
     cameraList = pointer(GENICAM_Camera())
     cameraCnt = c_uint()
     nRet = system.contents.discovery(system, byref(cameraList), byref(cameraCnt), c_int(GENICAM_EProtocolType.typeAll));
     if (nRet != 0):
-        raise Exception("discovery fail!")
+        return None, None
     elif cameraCnt.value < 1:
-        return cameraCnt.value, []
+        return None, None
     else:
         return cameraCnt.value, cameraList
 
@@ -32,6 +31,16 @@ def openCamera(camera):
         GENICAM_ECameraAccessPermission.accessPermissionControl))
     if (nRet != 0):
         raise Exception("camera connect fail!")
+
+
+# 关闭相机
+def closeCamera(camera):
+    # 断开相机
+    nRet = camera.disConnect(byref(camera))
+    if (nRet != 0):
+        print("disConnect camera fail!")
+        return -1
+    return 0
 
 
 # 注册相机连接状态回调
@@ -334,3 +343,161 @@ def save_image_file_by_frame(frame, path):
         imageFile.writelines(rgbBuff)
 
     imageFile.close()
+
+
+# 设置曝光
+def setExposureTime(camera, dVal):
+    # 通用属性设置:设置曝光 --根据属性类型，直接构造属性节点。如曝光是 double类型，构造doubleNode节点
+    exposureTimeNode = pointer(GENICAM_DoubleNode())
+    exposureTimeNodeInfo = GENICAM_DoubleNodeInfo()
+    exposureTimeNodeInfo.pCamera = pointer(camera)
+    exposureTimeNodeInfo.attrName = b"ExposureTime"
+    nRet = GENICAM_createDoubleNode(byref(exposureTimeNodeInfo), byref(exposureTimeNode))
+    if (nRet != 0):
+        print("create ExposureTime Node fail!")
+        return -1
+
+    # 设置曝光时间
+    nRet = exposureTimeNode.contents.setValue(exposureTimeNode, c_double(dVal))
+    if (nRet != 0):
+        print("set ExposureTime value [%f]us fail!" % (dVal))
+        # 释放相关资源
+        exposureTimeNode.contents.release(exposureTimeNode)
+        return -1
+    else:
+        print("set ExposureTime value [%f]us success." % (dVal))
+
+    # 释放节点资源
+    exposureTimeNode.contents.release(exposureTimeNode)
+    return 0
+
+
+# 设置感兴趣区域  --- 感兴趣区域的宽高 和 xy方向的偏移量  入参值应符合对应相机的递增规则
+def setROI(camera, OffsetX, OffsetY, nWidth, nHeight):
+    # 获取原始的宽度
+    widthMaxNode = pointer(GENICAM_IntNode())
+    widthMaxNodeInfo = GENICAM_IntNodeInfo()
+    widthMaxNodeInfo.pCamera = pointer(camera)
+    widthMaxNodeInfo.attrName = b"WidthMax"
+    nRet = GENICAM_createIntNode(byref(widthMaxNodeInfo), byref(widthMaxNode))
+    if (nRet != 0):
+        print("create WidthMax Node fail!")
+        return -1
+
+    oriWidth = c_longlong()
+    nRet = widthMaxNode.contents.getValue(widthMaxNode, byref(oriWidth))
+    if (nRet != 0):
+        print("widthMaxNode getValue fail!")
+        # 释放相关资源
+        widthMaxNode.contents.release(widthMaxNode)
+        return -1
+
+        # 释放相关资源
+    widthMaxNode.contents.release(widthMaxNode)
+
+    # 获取原始的高度
+    heightMaxNode = pointer(GENICAM_IntNode())
+    heightMaxNodeInfo = GENICAM_IntNodeInfo()
+    heightMaxNodeInfo.pCamera = pointer(camera)
+    heightMaxNodeInfo.attrName = b"HeightMax"
+    nRet = GENICAM_createIntNode(byref(heightMaxNodeInfo), byref(heightMaxNode))
+    if (nRet != 0):
+        print("create HeightMax Node fail!")
+        return -1
+
+    oriHeight = c_longlong()
+    nRet = heightMaxNode.contents.getValue(heightMaxNode, byref(oriHeight))
+    if (nRet != 0):
+        print("heightMaxNode getValue fail!")
+        # 释放相关资源
+        heightMaxNode.contents.release(heightMaxNode)
+        return -1
+
+    # 释放相关资源
+    heightMaxNode.contents.release(heightMaxNode)
+
+    # 检验参数
+    if ((oriWidth.value < (OffsetX + nWidth)) or (oriHeight.value < (OffsetY + nHeight))):
+        print("please check input param!")
+        return -1
+
+    # 设置宽度
+    widthNode = pointer(GENICAM_IntNode())
+    widthNodeInfo = GENICAM_IntNodeInfo()
+    widthNodeInfo.pCamera = pointer(camera)
+    widthNodeInfo.attrName = b"Width"
+    nRet = GENICAM_createIntNode(byref(widthNodeInfo), byref(widthNode))
+    if (nRet != 0):
+        print("create Width Node fail!")
+        return -1
+
+    nRet = widthNode.contents.setValue(widthNode, c_longlong(nWidth))
+    if (nRet != 0):
+        print("widthNode setValue [%d] fail!" % (nWidth))
+        # 释放相关资源
+        widthNode.contents.release(widthNode)
+        return -1
+
+        # 释放相关资源
+    widthNode.contents.release(widthNode)
+
+    # 设置高度
+    heightNode = pointer(GENICAM_IntNode())
+    heightNodeInfo = GENICAM_IntNodeInfo()
+    heightNodeInfo.pCamera = pointer(camera)
+    heightNodeInfo.attrName = b"Height"
+    nRet = GENICAM_createIntNode(byref(heightNodeInfo), byref(heightNode))
+    if (nRet != 0):
+        print("create Height Node fail!")
+        return -1
+
+    nRet = heightNode.contents.setValue(heightNode, c_longlong(nHeight))
+    if (nRet != 0):
+        print("heightNode setValue [%d] fail!" % (nHeight))
+        # 释放相关资源
+        heightNode.contents.release(heightNode)
+        return -1
+
+        # 释放相关资源
+    heightNode.contents.release(heightNode)
+
+    # 设置OffsetX
+    OffsetXNode = pointer(GENICAM_IntNode())
+    OffsetXNodeInfo = GENICAM_IntNodeInfo()
+    OffsetXNodeInfo.pCamera = pointer(camera)
+    OffsetXNodeInfo.attrName = b"OffsetX"
+    nRet = GENICAM_createIntNode(byref(OffsetXNodeInfo), byref(OffsetXNode))
+    if (nRet != 0):
+        print("create OffsetX Node fail!")
+        return -1
+
+    nRet = OffsetXNode.contents.setValue(OffsetXNode, c_longlong(OffsetX))
+    if (nRet != 0):
+        print("OffsetX setValue [%d] fail!" % (OffsetX))
+        # 释放相关资源
+        OffsetXNode.contents.release(OffsetXNode)
+        return -1
+
+        # 释放相关资源
+    OffsetXNode.contents.release(OffsetXNode)
+
+    # 设置OffsetY
+    OffsetYNode = pointer(GENICAM_IntNode())
+    OffsetYNodeInfo = GENICAM_IntNodeInfo()
+    OffsetYNodeInfo.pCamera = pointer(camera)
+    OffsetYNodeInfo.attrName = b"OffsetY"
+    nRet = GENICAM_createIntNode(byref(OffsetYNodeInfo), byref(OffsetYNode))
+    if (nRet != 0):
+        print("create OffsetY Node fail!")
+        return -1
+
+    nRet = OffsetYNode.contents.setValue(OffsetYNode, c_longlong(OffsetY))
+    if (nRet != 0):
+        print("OffsetY setValue [%d] fail!" % (OffsetY))
+        # 释放相关资源
+        OffsetYNode.contents.release(OffsetYNode)
+        return -1
+
+        # 释放相关资源
+    OffsetYNode.contents.release(OffsetYNode)
+    return 0

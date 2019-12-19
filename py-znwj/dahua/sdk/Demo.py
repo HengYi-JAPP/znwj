@@ -795,6 +795,7 @@ def demo():
         return -1
 
     # 关闭相机
+    unsubscribeCameraStatus()
     nRet = closeCamera(camera)
     if (nRet != 0):
         print("closeCamera fail")
