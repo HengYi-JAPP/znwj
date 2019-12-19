@@ -18,15 +18,16 @@ class Camera(object):
             self._eventSubscribe = openCamera(camera, self._deviceLinkNotify)
             setSoftTriggerConf(camera)
             # 创建流对象
-            # self._streamSourceInfo, self._streamSource = streamSourceInfo(camera)
+            self._streamSourceInfo, self._streamSource = createStreamSourceInfo(camera)
             # 开始拉流
-            # startGrabbing(self._streamSource, self._onGetFrameEx)
+            startGrabbing(self._streamSource, self._onGetFrameEx)
         except Exception as e:
             logging.error('open camera fail:' + str(e))
             self._error = True
 
     def grab_by_rfid(self, rfid):
-        streamSourceInfo, streamSource = createStreamSourceInfo(self._camera)
+        streamSource = self._streamSource
+        # streamSourceInfo, streamSource = createStreamSourceInfo(camera)
         # 主动取图
         frame = pointer(GENICAM_Frame())
         nRet = streamSource.contents.getFrame(streamSource, byref(frame), c_uint(1000))
@@ -49,7 +50,8 @@ class Camera(object):
 
     def grabOne(self):
         camera = self._camera
-        streamSourceInfo, streamSource = createStreamSourceInfo(camera)
+        streamSource = self._streamSource
+        # streamSourceInfo, streamSource = createStreamSourceInfo(camera)
         # 创建control节点
         acqCtrlInfo = GENICAM_AcquisitionControlInfo()
         acqCtrlInfo.pCamera = pointer(camera)
@@ -89,5 +91,6 @@ class Camera(object):
         # 此处客户应用程序应将图像拷贝出使用
         '''
         '''
+        logging.info('_onGetFrameEx')
         # 释放驱动图像缓存资源
         frame.contents.release(frame)
