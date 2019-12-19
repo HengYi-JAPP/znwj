@@ -9,7 +9,8 @@ class CameraCtrl(object):
         cameraCnt, cameraList = enumCameras()
         if cameraCnt is None:
             return
-        for index in range(0, cameraCnt):
+        for index in range(0, 1):
+            # for index in range(0, cameraCnt):
             camera = cameraList[index]
             self._cameras.append(Camera(app, camera))
 

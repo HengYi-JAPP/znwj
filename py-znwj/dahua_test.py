@@ -326,6 +326,7 @@ def setExposureTime(camera, dVal):
     exposureTimeNode.contents.release(exposureTimeNode)
     return 0
 
+
 def grabOne(camera):
     # 创建流对象
     streamSourceInfo = GENICAM_StreamSourceInfo()
@@ -647,108 +648,8 @@ def demo():
         streamSource.contents.release(streamSource)
         return -1
 
-        # 将裸数据图像拷出
-    imageSize = frame.contents.getImageSize(frame)
-    buffAddr = frame.contents.getImage(frame)
-    frameBuff = c_buffer(b'\0', imageSize)
-    memmove(frameBuff, c_char_p(buffAddr), imageSize)
-
-    # 给转码所需的参数赋值
-    convertParams = IMGCNV_SOpenParam()
-    convertParams.dataSize = imageSize
-    convertParams.height = frame.contents.getImageHeight(frame)
-    convertParams.width = frame.contents.getImageWidth(frame)
-    convertParams.paddingX = frame.contents.getImagePaddingX(frame)
-    convertParams.paddingY = frame.contents.getImagePaddingY(frame)
-    convertParams.pixelForamt = frame.contents.getImagePixelFormat(frame)
-
-    # 释放驱动图像缓存
-    frame.contents.release(frame)
-
-    # 保存bmp图片
-    bmpInfoHeader = BITMAPINFOHEADER()
-    bmpFileHeader = BITMAPFILEHEADER()
-
-    uRgbQuadLen = 0
-    rgbQuad = (RGBQUAD * 256)()  # 调色板信息
-    rgbBuff = c_buffer(b'\0', convertParams.height * convertParams.width * 3)
-
-    # 如果图像格式是 Mono8 不需要转码
-    if convertParams.pixelForamt == EPixelType.gvspPixelMono8:
-        # 初始化调色板rgbQuad 实际应用中 rgbQuad 只需初始化一次
-        for i in range(0, 256):
-            rgbQuad[i].rgbBlue = rgbQuad[i].rgbGreen = rgbQuad[i].rgbRed = i;
-
-        uRgbQuadLen = sizeof(RGBQUAD) * 256
-        bmpFileHeader.bfSize = sizeof(bmpFileHeader) + sizeof(bmpInfoHeader) + uRgbQuadLen + convertParams.dataSize
-        bmpInfoHeader.biBitCount = 8
-    else:
-        # 转码 => BGR24
-        rgbSize = c_int()
-        nRet = IMGCNV_ConvertToBGR24(cast(frameBuff, c_void_p), byref(convertParams), \
-                                     cast(rgbBuff, c_void_p), byref(rgbSize))
-
-        if (nRet != 0):
-            print("image convert fail! errorCode = " + str(nRet))
-            # 释放相关资源
-            streamSource.contents.release(streamSource)
-            return -1
-
-        bmpFileHeader.bfSize = sizeof(bmpFileHeader) + sizeof(bmpInfoHeader) + rgbSize.value
-        bmpInfoHeader.biBitCount = 24
-
-    bmpFileHeader.bfType = 0x4D42  # 文件头类型 'BM'(42 4D)
-    bmpFileHeader.bfReserved1 = 0  # 保留字
-    bmpFileHeader.bfReserved2 = 0  # 保留字
-    bmpFileHeader.bfOffBits = 54 + uRgbQuadLen  # 位图像素数据的起始位置
-
-    bmpInfoHeader.biSize = 40  # 信息头所占字节数
-    bmpInfoHeader.biWidth = convertParams.width
-    bmpInfoHeader.biHeight = -convertParams.height
-    bmpInfoHeader.biPlanes = 1  # 位图平面数
-
-    bmpInfoHeader.biCompression = 0  # 压缩类型，0 即不压缩
-    bmpInfoHeader.biSizeImage = 0
-    bmpInfoHeader.biXPelsPerMeter = 0
-    bmpInfoHeader.biYPelsPerMeter = 0
-    bmpInfoHeader.biClrUsed = 0
-    bmpInfoHeader.biClrImportant = 0
-
-    fileName = './image/image.bmp'
-    imageFile = open(fileName, 'wb+')
-
-    imageFile.write(struct.pack('H', bmpFileHeader.bfType))
-    imageFile.write(struct.pack('I', bmpFileHeader.bfSize))
-    imageFile.write(struct.pack('H', bmpFileHeader.bfReserved1))
-    imageFile.write(struct.pack('H', bmpFileHeader.bfReserved2))
-    imageFile.write(struct.pack('I', bmpFileHeader.bfOffBits))
-
-    imageFile.write(struct.pack('I', bmpInfoHeader.biSize))
-    imageFile.write(struct.pack('i', bmpInfoHeader.biWidth))
-    imageFile.write(struct.pack('i', bmpInfoHeader.biHeight))
-    imageFile.write(struct.pack('H', bmpInfoHeader.biPlanes))
-    imageFile.write(struct.pack('H', bmpInfoHeader.biBitCount))
-    imageFile.write(struct.pack('I', bmpInfoHeader.biCompression))
-    imageFile.write(struct.pack('I', bmpInfoHeader.biSizeImage))
-    imageFile.write(struct.pack('i', bmpInfoHeader.biXPelsPerMeter))
-    imageFile.write(struct.pack('i', bmpInfoHeader.biYPelsPerMeter))
-    imageFile.write(struct.pack('I', bmpInfoHeader.biClrUsed))
-    imageFile.write(struct.pack('I', bmpInfoHeader.biClrImportant))
-
-    if convertParams.pixelForamt == EPixelType.gvspPixelMono8:
-        # 写入调色板信息
-        for i in range(0, 256):
-            imageFile.write(struct.pack('B', rgbQuad[i].rgbBlue))
-            imageFile.write(struct.pack('B', rgbQuad[i].rgbGreen))
-            imageFile.write(struct.pack('B', rgbQuad[i].rgbRed))
-            imageFile.write(struct.pack('B', rgbQuad[i].rgbReserved))
-
-        imageFile.writelines(frameBuff)
-    else:
-        imageFile.writelines(rgbBuff)
-
-    imageFile.close()
-    print("save " + fileName + " success.")
+    save_image_file_by_frame(frame, 'd:/znwj/dahua/test.bmp')
+    print("save d:/znwj/dahua/test.bmp success.")
     print("save bmp time: " + str(datetime.datetime.now()))
 
     # 停止拉流
