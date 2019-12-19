@@ -132,23 +132,41 @@ def triggerSoftware(acqCtrl, streamSource):
 
 
 # 注册拉流回调函数 (该接口需要在开始拉流之前调用)
-def attachGrabbingEx(streamSource, onGetFrameEx, userInfo=b"test"):
-    frameCallbackFuncEx = callbackFuncEx(onGetFrameEx)
-    nRet = streamSource.contents.attachGrabbingEx(streamSource, frameCallbackFuncEx, userInfo)
+def attachGrabbingEx(streamSource, cb, userInfo=b"test"):
+    nRet = streamSource.contents.attachGrabbingEx(streamSource, callbackFuncEx(cb), userInfo)
     if (nRet != 0):
         # 释放相关资源
         streamSource.contents.release(streamSource)
         raise ("attachGrabbingEx fail!")
 
 
+# 反注册回调函数
+def detachGrabbingEx(streamSource, cb, userInfo=b"test"):
+    nRet = streamSource.contents.attachGrabbingEx(streamSource, callbackFuncEx(cb), userInfo)
+    if (nRet != 0):
+        # 释放相关资源
+        streamSource.contents.release(streamSource)
+        raise Exception("attachGrabbingEx fail!")
+
+
+# 开始拉流
 def startGrabbing(streamSource):
-    # 开始拉流
     nRet = streamSource.contents.startGrabbing(streamSource, c_ulonglong(0),
                                                c_int(GENICAM_EGrabStrategy.grabStrartegySequential))
     if (nRet != 0):
         # 释放相关资源
         streamSource.contents.release(streamSource)
         raise Exception("startGrabbing fail!")
+
+
+# 停止拉流
+def stopGrabbing(streamSource):
+    nRet = streamSource.contents.stopGrabbing(streamSource)
+    if (nRet != 0):
+        print("stopGrabbing fail!")
+        # 释放相关资源
+        streamSource.contents.release(streamSource)
+        return -1
 
 
 # 设置软触发

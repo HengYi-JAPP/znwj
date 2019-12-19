@@ -261,15 +261,10 @@ def demo():
     time.sleep(3)
 
     # 反注册回调函数
-    nRet = streamSource.contents.detachGrabbingEx(streamSource, frameCallbackFuncEx, userInfo)
-    if (nRet != 0):
-        print("detachGrabbingEx fail!")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
+    detachGrabbingEx(streamSource, frameCallbackFuncEx, userInfo)
 
     # 停止拉流
-    nRet = streamSource.contents.stopGrabbing(streamSource)
+    nRet = stopGrabbing(streamSource)
     if (nRet != 0):
         print("stopGrabbing fail!")
         # 释放相关资源
@@ -287,13 +282,7 @@ def demo():
         print("set SoftTriggerConf success!")
 
     # 开始拉流
-    nRet = streamSource.contents.startGrabbing(streamSource, c_ulonglong(0), \
-                                               c_int(GENICAM_EGrabStrategy.grabStrartegySequential))
-    if (nRet != 0):
-        print("startGrabbing fail!")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
+    startGrabbing(streamSource)
 
     # Sleep 1秒
     time.sleep(1)
