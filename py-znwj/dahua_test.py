@@ -39,9 +39,6 @@ def deviceLinkNotify(connectArg, linkInfo):
         print("camera has on line, userInfo [%s]" % (c_char_p(linkInfo).value))
 
 
-frameCallbackFuncEx = callbackFuncEx(onGetFrameEx)
-
-
 # 设置软触发
 def setSoftTriggerConf(camera):
     # 创建control节点
@@ -261,7 +258,7 @@ def demo():
     time.sleep(3)
 
     # 反注册回调函数
-    detachGrabbingEx(streamSource, frameCallbackFuncEx, userInfo)
+    detachGrabbingEx(streamSource, onGetFrameEx, userInfo)
 
     # 停止拉流
     nRet = stopGrabbing(streamSource)
