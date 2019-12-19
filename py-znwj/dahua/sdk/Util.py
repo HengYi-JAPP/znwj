@@ -56,7 +56,7 @@ def subscribeCameraStatus(camera, cb, info):
 
 
 # 反注册相机连接状态回调
-def unsubscribeCameraStatus(camera, connectCallBackFuncEx, info):
+def unsubscribeCameraStatus(camera, cb, info):
     # 反注册上下线通知
     eventSubscribe = pointer(GENICAM_EventSubscribe())
     eventSubscribeInfo = GENICAM_EventSubscribeInfo()
@@ -66,7 +66,7 @@ def unsubscribeCameraStatus(camera, connectCallBackFuncEx, info):
         print("create eventSubscribe fail!")
         return -1
 
-    nRet = eventSubscribe.contents.unsubscribeConnectArgsEx(eventSubscribe, connectCallBackFuncEx, info)
+    nRet = eventSubscribe.contents.unsubscribeConnectArgsEx(eventSubscribe, connectCallBackEx(cb), info)
     if (nRet != 0):
         print("unsubscribeConnectArgsEx fail!")
         # 释放相关资源
