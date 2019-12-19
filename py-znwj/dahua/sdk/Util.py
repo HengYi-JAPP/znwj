@@ -62,7 +62,7 @@ def subscribeCameraStatus(camera, connectCallBackFuncEx, status_info=b"statusInf
 
 
 # 创建流对象
-def streamSourceInfo(camera):
+def createStreamSourceInfo(camera):
     # 创建流对象
     streamSourceInfo = GENICAM_StreamSourceInfo()
     streamSourceInfo.channelId = 0

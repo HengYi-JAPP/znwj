@@ -1,13 +1,11 @@
 import datetime
-import logging
 
-from dahua.sdk.MVSDK import *
-from dahua.sdk.Util import save_image_file_by_frame, openCamera, streamSourceInfo, startGrabbing
+from dahua.sdk.Util import *
 
 
 class Camera(object):
     def __init__(self, app, camera):
-        self._db_path = app.config('dbPath', 'd:/znwj/db')
+        self._db_path = app.config('dbPath', app.__path + '/db')
         self._camera = camera
         self._key = str(camera.getKey(camera))
         self._vendor_name = str(camera.getVendorName(camera))
@@ -19,9 +17,9 @@ class Camera(object):
             # 打开相机
             self._eventSubscribe = openCamera(camera, self._deviceLinkNotify)
             # 创建流对象
-            self._streamSourceInfo, self._streamSource = streamSourceInfo(camera)
+            # self._streamSourceInfo, self._streamSource = streamSourceInfo(camera)
             # 开始拉流
-            startGrabbing(self._streamSource, self._onGetFrameEx)
+            # startGrabbing(self._streamSource, self._onGetFrameEx)
         except Exception as e:
             logging.error('', e.args)
             self._error = True
@@ -49,7 +47,7 @@ class Camera(object):
             print("camera has on line, userInfo [%s]" % (c_char_p(linkInfo).value))
 
     def grabOne(self, camera):
-        streamSource = self._streamSource
+        streamSourceInfo, streamSource = createStreamSourceInfo(camera)
         # 创建control节点
         acqCtrlInfo = GENICAM_AcquisitionControlInfo()
         acqCtrlInfo.pCamera = pointer(camera)
