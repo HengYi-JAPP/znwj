@@ -16,6 +16,7 @@ class Camera(object):
         try:
             # 打开相机
             self._eventSubscribe = openCamera(camera, self._deviceLinkNotify)
+            setSoftTriggerConf(camera)
             # 创建流对象
             # self._streamSourceInfo, self._streamSource = streamSourceInfo(camera)
             # 开始拉流
@@ -25,7 +26,7 @@ class Camera(object):
             self._error = True
 
     def grab_by_rfid(self, rfid):
-        streamSourceInfo, streamSource = createStreamSourceInfo(camera)
+        streamSourceInfo, streamSource = createStreamSourceInfo(self._camera)
         # 主动取图
         frame = pointer(GENICAM_Frame())
         nRet = streamSource.contents.getFrame(streamSource, byref(frame), c_uint(1000))

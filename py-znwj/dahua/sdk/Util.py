@@ -32,8 +32,6 @@ def openCamera(camera, deviceLinkNotify, status_info=b"statusInfo"):
         GENICAM_ECameraAccessPermission.accessPermissionControl))
     if (nRet != 0):
         raise Exception("camera connect fail!")
-    else:
-        logging.info("camera connect success.")
 
     # 注册相机连接状态回调
     connectCallBackFuncEx = connectCallBackEx(deviceLinkNotify)
