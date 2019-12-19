@@ -39,60 +39,6 @@ def deviceLinkNotify(connectArg, linkInfo):
         print("camera has on line, userInfo [%s]" % (c_char_p(linkInfo).value))
 
 
-# 设置软触发
-def setSoftTriggerConf(camera):
-    # 创建control节点
-    acqCtrlInfo = GENICAM_AcquisitionControlInfo()
-    acqCtrlInfo.pCamera = pointer(camera)
-    acqCtrl = pointer(GENICAM_AcquisitionControl())
-    nRet = GENICAM_createAcquisitionControl(pointer(acqCtrlInfo), byref(acqCtrl))
-    if (nRet != 0):
-        print("create AcquisitionControl fail!")
-        return -1
-
-    # 设置触发源为软触发
-    trigSourceEnumNode = acqCtrl.contents.triggerSource(acqCtrl)
-    nRet = trigSourceEnumNode.setValueBySymbol(byref(trigSourceEnumNode), b"Software")
-    if (nRet != 0):
-        print("set TriggerSource value [Software] fail!")
-        # 释放相关资源
-        trigSourceEnumNode.release(byref(trigSourceEnumNode))
-        acqCtrl.contents.release(acqCtrl)
-        return -1
-
-    # 需要释放Node资源
-    trigSourceEnumNode.release(byref(trigSourceEnumNode))
-
-    # 设置触发方式
-    trigSelectorEnumNode = acqCtrl.contents.triggerSelector(acqCtrl)
-    nRet = trigSelectorEnumNode.setValueBySymbol(byref(trigSelectorEnumNode), b"FrameStart")
-    if (nRet != 0):
-        print("set TriggerSelector value [FrameStart] fail!")
-        # 释放相关资源
-        trigSelectorEnumNode.release(byref(trigSelectorEnumNode))
-        acqCtrl.contents.release(acqCtrl)
-        return -1
-
-    # 需要释放Node资源
-    trigSelectorEnumNode.release(byref(trigSelectorEnumNode))
-
-    # 打开触发模式
-    trigModeEnumNode = acqCtrl.contents.triggerMode(acqCtrl)
-    nRet = trigModeEnumNode.setValueBySymbol(byref(trigModeEnumNode), b"On")
-    if (nRet != 0):
-        print("set TriggerMode value [On] fail!")
-        # 释放相关资源
-        trigModeEnumNode.release(byref(trigModeEnumNode))
-        acqCtrl.contents.release(acqCtrl)
-        return -1
-
-    # 需要释放相关资源
-    trigModeEnumNode.release(byref(trigModeEnumNode))
-    acqCtrl.contents.release(acqCtrl)
-
-    return 0
-
-
 # 设置外触发
 def setLineTriggerConf(camera):
     # 创建control节点
