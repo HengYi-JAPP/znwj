@@ -12,6 +12,7 @@ import time
 
 from dahua.sdk.ImageConvert import *
 from dahua.sdk.MVSDK import *
+from dahua.sdk.Util import enumCameras
 
 g_cameraStatusUserInfo = b"statusInfo"
 
@@ -327,31 +328,6 @@ def setExposureTime(camera, dVal):
     # 释放节点资源
     exposureTimeNode.contents.release(exposureTimeNode)
     return 0
-
-
-# 枚举相机
-def enumCameras():
-    # 获取系统单例
-    system = pointer(GENICAM_System())
-    nRet = GENICAM_getSystemInstance(byref(system))
-    if (nRet != 0):
-        print("getSystemInstance fail!")
-        return None, None
-
-    # 发现相机
-    cameraList = pointer(GENICAM_Camera())
-    cameraCnt = c_uint()
-    nRet = system.contents.discovery(system, byref(cameraList), byref(cameraCnt), c_int(GENICAM_EProtocolType.typeAll));
-    if (nRet != 0):
-        print("discovery fail!")
-        return None, None
-    elif cameraCnt.value < 1:
-        print("discovery no camera!")
-        return None, None
-    else:
-        print("cameraCnt: " + str(cameraCnt.value))
-        return cameraCnt.value, cameraList
-
 
 def grabOne(camera):
     # 创建流对象
