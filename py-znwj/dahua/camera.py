@@ -11,11 +11,14 @@ class Camera(object):
         self._vendor_name = str(camera.getVendorName(camera))
         self._model_name = str(camera.getModelName(camera))
         self._serial_number = str(camera.getSerialNumber(camera))
+        self._connectCallBackFuncEx = connectCallBackEx(self._onDeviceLinkNotify)
+        self._statusInfo == b"statusInfo"
 
         self._error = False
         try:
             # 打开相机
-            self._eventSubscribe = openCamera(camera, self._onDeviceLinkNotify)
+            openCamera(camera)
+            subscribeCameraStatus(camera, self._connectCallBackFuncEx, self._statusInfo)
             setSoftTriggerConf(camera)
             # 创建流对象
             self._streamSourceInfo, self._streamSource = createStreamSourceInfo(camera)
