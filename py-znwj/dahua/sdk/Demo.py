@@ -674,7 +674,7 @@ def demo():
         streamSource.contents.release(streamSource)
         return -1
 
-        # 将裸数据图像拷出
+    # 将裸数据图像拷出
     imageSize = frame.contents.getImageSize(frame)
     buffAddr = frame.contents.getImage(frame)
     frameBuff = c_buffer(b'\0', imageSize)

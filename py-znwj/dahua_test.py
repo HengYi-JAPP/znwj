@@ -6,7 +6,6 @@ Created on 2017-10-25
 @author:
 '''
 
-import datetime
 import time
 
 from dahua.sdk.Util import *
@@ -166,132 +165,132 @@ def demo():
 
     # 打开相机
     openCamera(camera)
-    subscribeCameraStatus(camera, deviceLinkNotify, g_cameraStatusUserInfo)
-    # 创建流对象
-    streamSourceInfo, streamSource = createStreamSourceInfo(camera)
-
-    # 通用属性设置:设置触发模式为off --根据属性类型，直接构造属性节点。如触发模式是 enumNode，构造enumNode节点
-    # 自由拉流：TriggerMode 需为 off
-    trigModeEnumNode = pointer(GENICAM_EnumNode())
-    trigModeEnumNodeInfo = GENICAM_EnumNodeInfo()
-    trigModeEnumNodeInfo.pCamera = pointer(camera)
-    trigModeEnumNodeInfo.attrName = b"TriggerMode"
-    nRet = GENICAM_createEnumNode(byref(trigModeEnumNodeInfo), byref(trigModeEnumNode))
-    if (nRet != 0):
-        print("create TriggerMode Node fail!")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
-
-    nRet = trigModeEnumNode.contents.setValueBySymbol(trigModeEnumNode, b"Off")
-    if (nRet != 0):
-        print("set TriggerMode value [Off] fail!")
-        # 释放相关资源
-        trigModeEnumNode.contents.release(trigModeEnumNode)
-        streamSource.contents.release(streamSource)
-        return -1
-
-    # 需要释放Node资源
-    trigModeEnumNode.contents.release(trigModeEnumNode)
-
-    # 注册拉流回调函数
-    userInfo = b"test"
-    attachGrabbingEx(streamSource, onGetFrameEx, userInfo)
-    # 开始拉流
-    startGrabbing(streamSource)
-
-    # 自由拉流3秒
-    time.sleep(3)
-
-    # 反注册回调函数
-    detachGrabbingEx(streamSource, onGetFrameEx, userInfo)
-
-    # 停止拉流
-    nRet = stopGrabbing(streamSource)
-    if (nRet != 0):
-        print("stopGrabbing fail!")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
-
-    # 设置软触发
-    nRet = setSoftTriggerConf(camera)
-    if (nRet != 0):
-        print("set SoftTriggerConf fail!")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
-    else:
-        print("set SoftTriggerConf success!")
-
-    # 开始拉流
-    startGrabbing(streamSource)
-
-    # Sleep 1秒
-    time.sleep(1)
-
-    # 软触发取一张图
-    nRet = grabOne(camera)
-    if (nRet != 0):
-        print("grabOne fail!")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
-    else:
-        print("trigger time: " + str(datetime.datetime.now()))
-
-    # 主动取图
-    frame = pointer(GENICAM_Frame())
-    nRet = streamSource.contents.getFrame(streamSource, byref(frame), c_uint(1000))
-    if (nRet != 0):
-        print("SoftTrigger getFrame fail! timeOut [1000]ms")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
-    else:
-        print("SoftTrigger getFrame success BlockId = " + str(frame.contents.getBlockId(frame)))
-        print("get frame time: " + str(datetime.datetime.now()))
-
-    nRet = frame.contents.valid(frame)
-    if (nRet != 0):
-        print("frame is invalid!")
-        # 释放驱动图像缓存资源
-        frame.contents.release(frame)
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
-
-    save_image_file_by_frame(frame, 'd:/znwj/dahua/test.bmp')
-    print("save d:/znwj/dahua/test.bmp success.")
-    print("save bmp time: " + str(datetime.datetime.now()))
-
-    # 停止拉流
-    nRet = streamSource.contents.stopGrabbing(streamSource)
-    if (nRet != 0):
-        print("stopGrabbing fail!")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
-
-    # 设置曝光
-    nRet = setExposureTime(camera, 20000)
-    if (nRet != 0):
-        print("set ExposureTime fail")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
-
-    # 关闭相机
-    unsubscribeCameraStatus(camera, deviceLinkNotify, g_cameraStatusUserInfo)
-    nRet = closeCamera(camera)
-    if (nRet != 0):
-        print("closeCamera fail")
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        return -1
-
-    # 释放相关资源
-    streamSource.contents.release(streamSource)
+    # subscribeCameraStatus(camera, deviceLinkNotify, g_cameraStatusUserInfo)
+    # # 创建流对象
+    # streamSourceInfo, streamSource = createStreamSourceInfo(camera)
+    #
+    # # 通用属性设置:设置触发模式为off --根据属性类型，直接构造属性节点。如触发模式是 enumNode，构造enumNode节点
+    # # 自由拉流：TriggerMode 需为 off
+    # trigModeEnumNode = pointer(GENICAM_EnumNode())
+    # trigModeEnumNodeInfo = GENICAM_EnumNodeInfo()
+    # trigModeEnumNodeInfo.pCamera = pointer(camera)
+    # trigModeEnumNodeInfo.attrName = b"TriggerMode"
+    # nRet = GENICAM_createEnumNode(byref(trigModeEnumNodeInfo), byref(trigModeEnumNode))
+    # if (nRet != 0):
+    #     print("create TriggerMode Node fail!")
+    #     # 释放相关资源
+    #     streamSource.contents.release(streamSource)
+    #     return -1
+    #
+    # nRet = trigModeEnumNode.contents.setValueBySymbol(trigModeEnumNode, b"Off")
+    # if (nRet != 0):
+    #     print("set TriggerMode value [Off] fail!")
+    #     # 释放相关资源
+    #     trigModeEnumNode.contents.release(trigModeEnumNode)
+    #     streamSource.contents.release(streamSource)
+    #     return -1
+    #
+    # # 需要释放Node资源
+    # trigModeEnumNode.contents.release(trigModeEnumNode)
+    #
+    # # 注册拉流回调函数
+    # userInfo = b"test"
+    # attachGrabbingEx(streamSource, onGetFrameEx, userInfo)
+    # # 开始拉流
+    # startGrabbing(streamSource)
+    #
+    # # 自由拉流3秒
+    # time.sleep(3)
+    #
+    # # 反注册回调函数
+    # detachGrabbingEx(streamSource, onGetFrameEx, userInfo)
+    #
+    # # 停止拉流
+    # nRet = stopGrabbing(streamSource)
+    # if (nRet != 0):
+    #     print("stopGrabbing fail!")
+    #     # 释放相关资源
+    #     streamSource.contents.release(streamSource)
+    #     return -1
+    #
+    # # 设置软触发
+    # nRet = setSoftTriggerConf(camera)
+    # if (nRet != 0):
+    #     print("set SoftTriggerConf fail!")
+    #     # 释放相关资源
+    #     streamSource.contents.release(streamSource)
+    #     return -1
+    # else:
+    #     print("set SoftTriggerConf success!")
+    #
+    # # 开始拉流
+    # startGrabbing(streamSource)
+    #
+    # # Sleep 1秒
+    # time.sleep(1)
+    #
+    # # 软触发取一张图
+    # nRet = grabOne(camera)
+    # if (nRet != 0):
+    #     print("grabOne fail!")
+    #     # 释放相关资源
+    #     streamSource.contents.release(streamSource)
+    #     return -1
+    # else:
+    #     print("trigger time: " + str(datetime.datetime.now()))
+    #
+    # # 主动取图
+    # frame = pointer(GENICAM_Frame())
+    # nRet = streamSource.contents.getFrame(streamSource, byref(frame), c_uint(1000))
+    # if (nRet != 0):
+    #     print("SoftTrigger getFrame fail! timeOut [1000]ms")
+    #     # 释放相关资源
+    #     streamSource.contents.release(streamSource)
+    #     return -1
+    # else:
+    #     print("SoftTrigger getFrame success BlockId = " + str(frame.contents.getBlockId(frame)))
+    #     print("get frame time: " + str(datetime.datetime.now()))
+    #
+    # nRet = frame.contents.valid(frame)
+    # if (nRet != 0):
+    #     print("frame is invalid!")
+    #     # 释放驱动图像缓存资源
+    #     frame.contents.release(frame)
+    #     # 释放相关资源
+    #     streamSource.contents.release(streamSource)
+    #     return -1
+    #
+    # save_image_file_by_frame(frame, 'd:/znwj/dahua/test.bmp')
+    # print("save d:/znwj/dahua/test.bmp success.")
+    # print("save bmp time: " + str(datetime.datetime.now()))
+    #
+    # # 停止拉流
+    # nRet = streamSource.contents.stopGrabbing(streamSource)
+    # if (nRet != 0):
+    #     print("stopGrabbing fail!")
+    #     # 释放相关资源
+    #     streamSource.contents.release(streamSource)
+    #     return -1
+    #
+    # # 设置曝光
+    # nRet = setExposureTime(camera, 20000)
+    # if (nRet != 0):
+    #     print("set ExposureTime fail")
+    #     # 释放相关资源
+    #     streamSource.contents.release(streamSource)
+    #     return -1
+    #
+    # # 关闭相机
+    # unsubscribeCameraStatus(camera, deviceLinkNotify, g_cameraStatusUserInfo)
+    # nRet = closeCamera(camera)
+    # if (nRet != 0):
+    #     print("closeCamera fail")
+    #     # 释放相关资源
+    #     streamSource.contents.release(streamSource)
+    #     return -1
+    #
+    # # 释放相关资源
+    # streamSource.contents.release(streamSource)
 
     return 0
 
