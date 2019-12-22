@@ -58,7 +58,7 @@ def on_disconnect(client, userdata, rc):
 mqttc.on_message = on_message
 mqttc.on_connect = on_connect
 mqttc.on_disconnect = on_disconnect
-mqttc.connect(app.config('mqtt.host'), app.config('mqtt.port', 1883))
+mqttc.connect(app.config('mqtt.host', '127.0.0.1'), app.config('mqtt.port', 1883))
 mqttc.subscribe(DETECT_TOPIC, qos=1)
 mqttc.subscribe(ERROR_TOPIC, qos=1)
 mqttc.subscribe(START_TOPIC, qos=1)
