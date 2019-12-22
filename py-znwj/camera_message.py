@@ -1,6 +1,4 @@
 import multiprocessing
-import random
-import time
 
 from rx import operators as ops
 from rx.scheduler import ThreadPoolScheduler
@@ -10,12 +8,6 @@ from dahua.camera_ctrl import CameraCtrl
 
 optimal_thread_count = multiprocessing.cpu_count()
 pool_scheduler = ThreadPoolScheduler(optimal_thread_count)
-
-
-def intense_calculation(rfid):
-    # sleep for a random short duration between 0.5 to 2.0 seconds to simulate a long-running calculation
-    time.sleep(random.randint(10, 30) * 0.1)
-    return rfid
 
 
 class CameraMessage(object):
@@ -31,7 +23,10 @@ class CameraMessage(object):
         )
 
     def handle_next_rfid(self, rfid):
-        self._sink.on_next(rfid)
+        for it in self._cameras:
+            it.grab_by_rfid(rfid)
+        self._app._detector.detect(rfid)
+        pass
 
     def grab_by_rfid(self, rfid):
         for camera in self._cameras:

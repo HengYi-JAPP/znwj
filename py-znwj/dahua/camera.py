@@ -1,5 +1,3 @@
-import datetime
-
 from dahua.sdk.Util import *
 
 
@@ -31,25 +29,17 @@ class Camera(object):
         # 软触发取一张图
         nRet = grabOne(self._camera)
         if (nRet != 0):
-            print("grabOne fail!")
-            # 释放相关资源
-            streamSource.contents.release(streamSource)
+            logging.error("grabOne fail!")
             return -1
-        else:
-            print("trigger time: " + str(datetime.datetime.now()))
         streamSource = self._streamSource
-        # streamSourceInfo, streamSource = createStreamSourceInfo(camera)
         # 主动取图
         frame = pointer(GENICAM_Frame())
         nRet = streamSource.contents.getFrame(streamSource, byref(frame), c_uint(1000))
         if (nRet != 0):
-            raise Exception("SoftTrigger getFrame fail! timeOut [1000]ms")
+            logging.error("SoftTrigger getFrame fail! timeOut [1000]ms")
         else:
-            print("SoftTrigger getFrame success BlockId = " + str(frame.contents.getBlockId(frame)))
-            print("get frame time: " + str(datetime.datetime.now()))
-
-        save_image_file_by_frame(
-            frame, self._db_path + '/' + rfid + '/original/' + self._serial_number + '.bmp')
+            filePath = self._db_path + '/' + rfid + '/original/' + self._serial_number + '.bmp'
+            save_image_file_by_frame(frame, filePath)
         return 0
 
     # 相机连接状态回调函数
@@ -60,36 +50,6 @@ class Camera(object):
         elif (EVType.onLine == connectArg.contents.m_event):
             print("camera has on line, userInfo [%s]" % (c_char_p(linkInfo).value))
             # // 此处一般要断开相机连接，重新连接相机， // 重新创建流对象、事件订阅对象, // 重新注册流事件回调、相机事件回调、拉流回调， // 重新开始拉
-
-    def grabOne(self):
-        camera = self._camera
-        streamSource = self._streamSource
-        # streamSourceInfo, streamSource = createStreamSourceInfo(camera)
-        # 创建control节点
-        acqCtrlInfo = GENICAM_AcquisitionControlInfo()
-        acqCtrlInfo.pCamera = pointer(camera)
-        acqCtrl = pointer(GENICAM_AcquisitionControl())
-        nRet = GENICAM_createAcquisitionControl(pointer(acqCtrlInfo), byref(acqCtrl))
-        if (nRet != 0):
-            # 释放相关资源
-            streamSource.contents.release(streamSource)
-            raise Exception("create AcquisitionControl fail!")
-
-        # 执行一次软触发
-        trigSoftwareCmdNode = acqCtrl.contents.triggerSoftware(acqCtrl)
-        nRet = trigSoftwareCmdNode.execute(byref(trigSoftwareCmdNode))
-        if (nRet != 0):
-            # 释放相关资源
-            trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
-            acqCtrl.contents.release(acqCtrl)
-            streamSource.contents.release(streamSource)
-            raise Exception("Execute triggerSoftware fail!")
-
-            # 释放相关资源
-        trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
-        acqCtrl.contents.release(acqCtrl)
-        logging.info('grabOne')
-        return 0
 
     # 取流回调函数Ex
     def _onGetFrameEx(self, frame, userInfo):
