@@ -219,6 +219,7 @@ def setSoftTriggerConf(camera):
     return 0
 
 
+# 软触发取一张图
 def grabOne(camera):
     # 创建流对象
     streamSourceInfo = GENICAM_StreamSourceInfo()
