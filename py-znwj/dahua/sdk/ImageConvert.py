@@ -11,7 +11,7 @@ from ctypes import *
 # 32bit
 # ImageConvertdll = OleDLL("./dll/x86/ImageConvert.dll")
 # 64bit
-ImageConvertdll = OleDLL("D:/znwj/py-znwj/dahua/sdk/dll/x64/ImageConvert.dll")
+ImageConvertdll = OleDLL("D:/znwj/dahua/sdk/dll/x64/ImageConvert.dll")
 
 
 # 定义枚举类型

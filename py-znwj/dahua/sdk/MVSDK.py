@@ -18,7 +18,7 @@ def enum(**enums):
 # 32bit
 # MVSDKdll = OleDLL("./dll/x86/MVSDKmd.dll")
 # 64bit
-MVSDKdll = OleDLL("D:/znwj/py-znwj/dahua/sdk/dll/x64/MVSDKmd.dll")
+MVSDKdll = OleDLL("D:/znwj/dahua/sdk/dll/x64/MVSDKmd.dll")
 
 # SDK.h => define 宏定义
 MAX_PARAM_CNT = 1000
