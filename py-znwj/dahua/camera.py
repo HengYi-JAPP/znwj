@@ -1,3 +1,5 @@
+import pathlib
+
 from dahua.sdk.Util import *
 
 
@@ -38,8 +40,9 @@ class Camera(object):
         if (nRet != 0):
             logging.error("SoftTrigger getFrame fail! timeOut [1000]ms")
         else:
-            filePath = self._db_path + '/' + rfid + '/original/' + self._serial_number + '.bmp'
-            save_image_file_by_frame(frame, filePath)
+            dir = self._db_path + '/' + rfid + '/original'
+            pathlib.Path(dir).mkdir(parents=True, exist_ok=True)
+            save_image_file_by_frame(frame, dir + '/' + self._serial_number + '.bmp')
         return 0
 
     # 相机连接状态回调函数
