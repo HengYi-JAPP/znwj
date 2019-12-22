@@ -284,6 +284,7 @@ def demo():
     else:
         print("SoftTrigger getFrame success BlockId = " + str(frame.contents.getBlockId(frame)))
         print("get frame time: " + str(datetime.datetime.now()))
+    save_image_file_by_frame(frame, 'd:/znwj/dahua/test.bmp')
 
     # # 设置软触发
     # nRet = setSoftTriggerConf(camera)
