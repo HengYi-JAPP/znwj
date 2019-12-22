@@ -104,18 +104,7 @@ def setLineTriggerConf(camera):
     return 0
 
 
-def grabOne(camera):
-    # 创建流对象
-    streamSourceInfo = GENICAM_StreamSourceInfo()
-    streamSourceInfo.channelId = 0
-    streamSourceInfo.pCamera = pointer(camera)
-
-    streamSource = pointer(GENICAM_StreamSource())
-    nRet = GENICAM_createStreamSource(pointer(streamSourceInfo), byref(streamSource))
-    if (nRet != 0):
-        print("create StreamSource fail!")
-        return -1
-
+def grabOne(camera, streamSource):
     # 创建control节点
     acqCtrlInfo = GENICAM_AcquisitionControlInfo()
     acqCtrlInfo.pCamera = pointer(camera)
@@ -158,11 +147,11 @@ def demo():
     # 显示相机信息
     for index in range(0, cameraCnt):
         camera = cameraList[index]
-        print("\nCamera Id = " + str(index))
-        print("Key           = " + str(camera.getKey(camera)))
-        print("vendor name   = " + str(camera.getVendorName(camera)))
-        print("Model  name   = " + str(camera.getModelName(camera)))
-        print("Serial number = " + str(camera.getSerialNumber(camera)))
+        # print("\nCamera Id = " + str(index))
+        # print("Key           = " + str(camera.getKey(camera)))
+        # print("vendor name   = " + str(camera.getVendorName(camera)))
+        # print("Model  name   = " + str(camera.getModelName(camera)))
+        # print("Serial number = " + str(camera.getSerialNumber(camera)))
 
     camera = cameraList[0]
 
@@ -189,7 +178,7 @@ def demo():
         return -1
 
     # 软触发取一张图
-    nRet = grabOne(camera)
+    nRet = grabOne(camera, streamSource)
     if (nRet != 0):
         print("grabOne fail!")
         # 释放相关资源
@@ -211,7 +200,7 @@ def demo():
     save_image_file_by_frame(frame, 'd:/znwj/dahua/test1.bmp')
 
     # 软触发取一张图
-    nRet = grabOne(camera)
+    nRet = grabOne(camera, streamSource)
     if (nRet != 0):
         print("grabOne fail!")
         # 释放相关资源
