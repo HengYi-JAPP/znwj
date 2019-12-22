@@ -25,8 +25,8 @@ class CameraMessage(object):
     def handle_next_rfid(self, rfid):
         for it in self._cameras:
             it.grab_by_rfid(rfid)
-        self._app._detector.detect(rfid)
-        pass
+        # self._app._detector.detect(rfid)
+        # pass
 
     def grab_by_rfid(self, rfid):
         for camera in self._cameras:
