@@ -263,6 +263,16 @@ def demo():
     # Sleep 1秒
     time.sleep(1)
 
+    # 软触发取一张图
+    nRet = grabOne(camera)
+    if (nRet != 0):
+        print("grabOne fail!")
+        # 释放相关资源
+        streamSource.contents.release(streamSource)
+        return -1
+    else:
+        print("trigger time: " + str(datetime.datetime.now()))
+
     # 主动取图
     frame = pointer(GENICAM_Frame())
     nRet = streamSource.contents.getFrame(streamSource, byref(frame), c_uint(1000))
