@@ -104,7 +104,7 @@ def setLineTriggerConf(camera):
     return 0
 
 
-def grabOne(camera, filePath):
+def grabOne(camera, ss, filePath):
     # 创建流对象
     streamSourceInfo = GENICAM_StreamSourceInfo()
     streamSourceInfo.channelId = 0
@@ -138,23 +138,23 @@ def grabOne(camera, filePath):
         streamSource.contents.release(streamSource)
         return -1
 
+    # 释放相关资源
+    trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
+    acqCtrl.contents.release(acqCtrl)
+    streamSource.contents.release(streamSource)
+
     # 主动取图
     frame = pointer(GENICAM_Frame())
-    nRet = streamSource.contents.getFrame(streamSource, byref(frame), c_uint(1000))
+    nRet = ss.contents.getFrame(ss, byref(frame), c_uint(1000))
     if (nRet != 0):
         print("SoftTrigger getFrame fail! timeOut [1000]ms")
         # 释放相关资源
-        streamSource.contents.release(streamSource)
+        ss.contents.release(ss)
         return -1
     else:
         print("SoftTrigger getFrame success BlockId = " + str(frame.contents.getBlockId(frame)))
         print("get frame time: " + str(datetime.datetime.now()))
     save_image_file_by_frame(frame, filePath)
-
-    # 释放相关资源
-    trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
-    acqCtrl.contents.release(acqCtrl)
-    streamSource.contents.release(streamSource)
 
     return 0
 
@@ -202,7 +202,7 @@ def demo():
         return -1
 
     # 软触发取一张图
-    nRet = grabOne(camera, 'd:/znwj/dahua/test1.bmp')
+    nRet = grabOne(camera, streamSource, 'd:/znwj/dahua/test1.bmp')
     if (nRet != 0):
         print("grabOne fail!")
         # 释放相关资源
