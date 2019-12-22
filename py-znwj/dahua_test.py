@@ -105,6 +105,17 @@ def setLineTriggerConf(camera):
 
 
 def grabOne(camera, streamSource):
+    # 创建流对象
+    streamSourceInfo = GENICAM_StreamSourceInfo()
+    streamSourceInfo.channelId = 0
+    streamSourceInfo.pCamera = pointer(camera)
+
+    streamSource = pointer(GENICAM_StreamSource())
+    nRet = GENICAM_createStreamSource(pointer(streamSourceInfo), byref(streamSource))
+    if (nRet != 0):
+        print("create StreamSource fail!")
+        return -1
+
     # 创建control节点
     acqCtrlInfo = GENICAM_AcquisitionControlInfo()
     acqCtrlInfo.pCamera = pointer(camera)
