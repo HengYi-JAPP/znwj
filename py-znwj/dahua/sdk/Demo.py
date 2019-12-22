@@ -387,7 +387,7 @@ def grabOne(camera):
         streamSource.contents.release(streamSource)
         return -1
 
-        # 释放相关资源
+    # 释放相关资源
     trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
     acqCtrl.contents.release(acqCtrl)
     streamSource.contents.release(streamSource)

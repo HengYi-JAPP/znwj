@@ -17,9 +17,10 @@ class Camera(object):
             # 打开相机
             openCamera(camera)
             subscribeCameraStatus(camera, self._onDeviceLinkNotify)
-            setSoftTriggerConf(camera)
             # 创建流对象
             self._streamSourceInfo, self._streamSource = createStreamSourceInfo(camera)
+            # 设置软触发
+            setSoftTriggerConf(camera)
             # 开始拉流
             startGrabbing(self._streamSource)
         except Exception as e:
@@ -27,6 +28,15 @@ class Camera(object):
             self._error = True
 
     def grab_by_rfid(self, rfid):
+        # 软触发取一张图
+        nRet = grabOne(self._camera)
+        if (nRet != 0):
+            print("grabOne fail!")
+            # 释放相关资源
+            streamSource.contents.release(streamSource)
+            return -1
+        else:
+            print("trigger time: " + str(datetime.datetime.now()))
         streamSource = self._streamSource
         # streamSourceInfo, streamSource = createStreamSourceInfo(camera)
         # 主动取图

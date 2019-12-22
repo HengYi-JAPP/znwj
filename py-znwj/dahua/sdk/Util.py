@@ -219,6 +219,48 @@ def setSoftTriggerConf(camera):
     return 0
 
 
+def grabOne(camera):
+    # 创建流对象
+    streamSourceInfo = GENICAM_StreamSourceInfo()
+    streamSourceInfo.channelId = 0
+    streamSourceInfo.pCamera = pointer(camera)
+
+    streamSource = pointer(GENICAM_StreamSource())
+    nRet = GENICAM_createStreamSource(pointer(streamSourceInfo), byref(streamSource))
+    if (nRet != 0):
+        print("create StreamSource fail!")
+        return -1
+
+    # 创建control节点
+    acqCtrlInfo = GENICAM_AcquisitionControlInfo()
+    acqCtrlInfo.pCamera = pointer(camera)
+    acqCtrl = pointer(GENICAM_AcquisitionControl())
+    nRet = GENICAM_createAcquisitionControl(pointer(acqCtrlInfo), byref(acqCtrl))
+    if (nRet != 0):
+        print("create AcquisitionControl fail!")
+        # 释放相关资源
+        streamSource.contents.release(streamSource)
+        return -1
+
+    # 执行一次软触发
+    trigSoftwareCmdNode = acqCtrl.contents.triggerSoftware(acqCtrl)
+    nRet = trigSoftwareCmdNode.execute(byref(trigSoftwareCmdNode))
+    if (nRet != 0):
+        print("Execute triggerSoftware fail!")
+        # 释放相关资源
+        trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
+        acqCtrl.contents.release(acqCtrl)
+        streamSource.contents.release(streamSource)
+        return -1
+
+    # 释放相关资源
+    trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
+    acqCtrl.contents.release(acqCtrl)
+    streamSource.contents.release(streamSource)
+
+    return 0
+
+
 class BITMAPFILEHEADER(Structure):
     _fields_ = [
         ('bfType', c_ushort),
