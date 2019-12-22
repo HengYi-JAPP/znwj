@@ -1,4 +1,4 @@
-import json
+import logging
 
 
 class Detector(object):
@@ -7,10 +7,12 @@ class Detector(object):
         # self.__detector2 = resnet(config)
         pass
 
-    def detect(self, code):
-        infos1 = self.__detector1.detect(code)
-        infos2 = self.__detector2.detect(code)
-        return json.dumps({
-            'code': code,
-            'detectExceptionInfos': infos1 + infos2
-        })
+    def detect(self, rfid):
+        logging.debug('Detector handled ' + rfid)
+        pass
+        # infos1 = self.__detector1.detect(code)
+        # infos2 = self.__detector2.detect(code)
+        # return json.dumps({
+        #     'code': code,
+        #     'detectExceptionInfos': infos1 + infos2
+        # })

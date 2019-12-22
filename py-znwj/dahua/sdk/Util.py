@@ -101,35 +101,6 @@ def createStreamSourceInfo(camera):
     return streamSourceInfo, streamSource
 
 
-# 创建control节点
-def acqCtrlInfo(camera, streamSource):
-    # 创建control节点
-    acqCtrlInfo = GENICAM_AcquisitionControlInfo()
-    acqCtrlInfo.pCamera = pointer(camera)
-    acqCtrl = pointer(GENICAM_AcquisitionControl())
-    nRet = GENICAM_createAcquisitionControl(pointer(acqCtrlInfo), byref(acqCtrl))
-    if (nRet != 0):
-        # 释放相关资源
-        streamSource.contents.release(streamSource)
-        raise Exception("create AcquisitionControl fail!")
-    return acqCtrlInfo, acqCtrl
-
-
-def triggerSoftware(acqCtrl, streamSource):
-    # 执行一次软触发
-    trigSoftwareCmdNode = acqCtrl.contents.triggerSoftware(acqCtrl)
-    nRet = trigSoftwareCmdNode.execute(byref(trigSoftwareCmdNode))
-    if (nRet != 0):
-        # 释放相关资源
-        trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
-        acqCtrl.contents.release(acqCtrl)
-        streamSource.contents.release(streamSource)
-        raise Exception("Execute triggerSoftware fail!")
-    # 释放相关资源
-    trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
-    acqCtrl.contents.release(acqCtrl)
-    streamSource.contents.release(streamSource)
-
 
 # 注册拉流回调函数 (该接口需要在开始拉流之前调用)
 def attachGrabbingEx(streamSource, cb, userInfo=b"test"):
@@ -167,6 +138,36 @@ def stopGrabbing(streamSource):
         # 释放相关资源
         streamSource.contents.release(streamSource)
         return -1
+
+
+# 创建control节点
+def acqCtrlInfo(camera, streamSource):
+    # 创建control节点
+    acqCtrlInfo = GENICAM_AcquisitionControlInfo()
+    acqCtrlInfo.pCamera = pointer(camera)
+    acqCtrl = pointer(GENICAM_AcquisitionControl())
+    nRet = GENICAM_createAcquisitionControl(pointer(acqCtrlInfo), byref(acqCtrl))
+    if (nRet != 0):
+        # 释放相关资源
+        streamSource.contents.release(streamSource)
+        raise Exception("create AcquisitionControl fail!")
+    return acqCtrlInfo, acqCtrl
+
+
+def triggerSoftware(acqCtrl, streamSource):
+    # 执行一次软触发
+    trigSoftwareCmdNode = acqCtrl.contents.triggerSoftware(acqCtrl)
+    nRet = trigSoftwareCmdNode.execute(byref(trigSoftwareCmdNode))
+    if (nRet != 0):
+        # 释放相关资源
+        trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
+        acqCtrl.contents.release(acqCtrl)
+        streamSource.contents.release(streamSource)
+        raise Exception("Execute triggerSoftware fail!")
+    # 释放相关资源
+    trigSoftwareCmdNode.release(byref(trigSoftwareCmdNode))
+    acqCtrl.contents.release(acqCtrl)
+    streamSource.contents.release(streamSource)
 
 
 # 设置软触发

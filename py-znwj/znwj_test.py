@@ -23,5 +23,3 @@ else:
 app = PyZnwj(path, loop)
 camera = app._camera_msg._cameras[0]
 camera.grab_by_rfid('0000')
-camera.grab_by_rfid('0001')
-# camera.grabOne()

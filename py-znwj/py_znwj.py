@@ -1,12 +1,19 @@
 import logging
+import multiprocessing
 
 import yaml
+from rx import operators as ops
+from rx.scheduler import ThreadPoolScheduler
+from rx.subject import Subject
 
 from camera_message import CameraMessage
 from constant import DETECT_RESULT_TOPIC
 from detect.detector import Detector
 from plc_message import PlcMessage
 from sick_message import SickMessage
+
+optimal_thread_count = multiprocessing.cpu_count()
+pool_scheduler = ThreadPoolScheduler(optimal_thread_count)
 
 
 class PyZnwj(object):
@@ -18,6 +25,15 @@ class PyZnwj(object):
         logging.basicConfig(level=self.config('logging.level', logging.WARNING), format=self.config('logging.format'))
 
         self._running = False
+        self._sink = Subject()
+        self._sink.pipe(
+            ops.observe_on(pool_scheduler),
+            ops.filter(lambda it: self._running),
+            ops.map(lambda it: self.grab_by_rfid(it)),
+        ).subscribe(
+            on_next=lambda it: print('{} handled {}'.format('CameraMessage', it))
+        )
+
         self._camera_msg = CameraMessage(self)
         self._detector = Detector(self)
         self._plc = PlcMessage(self)
@@ -25,9 +41,10 @@ class PyZnwj(object):
             self._sick_msg = SickMessage(self)
             # loop.create_task(self._sick_msg.start())
 
+    def handle_next_rfid(self, rfid):
+        self._camera_msg.handle_next_rfid(rfid)
+
     def handle_next_detect(self, rfid):
-        if not hasattr(self, '_detector'):
-            return
         result = self._detector.detect(rfid)
         if not hasattr(self, '_plc'):
             self._plc.handle_detect_result(result)
