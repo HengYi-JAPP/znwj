@@ -23,7 +23,7 @@ class PyZnwj(object):
         self._plc = PlcMessage(self)
         if self.config('sick'):
             self._sick_msg = SickMessage(self)
-            loop.create_task(self._sick_msg.start())
+            # loop.create_task(self._sick_msg.start())
 
     def handle_next_detect(self, rfid):
         if not hasattr(self, '_detector'):

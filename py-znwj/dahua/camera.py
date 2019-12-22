@@ -14,7 +14,7 @@ class Camera(object):
         try:
             # 打开相机
             openCamera(camera)
-            subscribeCameraStatus(camera, self._onDeviceLinkNotify)
+            subscribeCameraStatus(camera, self._onDeviceLinkNotify, b'test')
             # 创建流对象
             self._streamSourceInfo, self._streamSource = createStreamSourceInfo(camera)
             # 设置软触发
