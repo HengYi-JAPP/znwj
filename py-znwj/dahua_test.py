@@ -222,6 +222,25 @@ def demo():
         streamSource.contents.release(streamSource)
         return -1
 
+    # 自由拉流3秒
+    time.sleep(3)
+
+    # 反注册回调函数
+    nRet = streamSource.contents.detachGrabbingEx(streamSource, frameCallbackFuncEx, userInfo)
+    if (nRet != 0):
+        print("detachGrabbingEx fail!")
+        # 释放相关资源
+        streamSource.contents.release(streamSource)
+        return -1
+
+    # 停止拉流
+    nRet = streamSource.contents.stopGrabbing(streamSource)
+    if (nRet != 0):
+        print("stopGrabbing fail!")
+        # 释放相关资源
+        streamSource.contents.release(streamSource)
+        return -1
+
     # 设置软触发
     nRet = setSoftTriggerConf(camera)
     if (nRet != 0):
@@ -231,6 +250,18 @@ def demo():
         return -1
     else:
         print("set SoftTriggerConf success!")
+
+    # 开始拉流
+    nRet = streamSource.contents.startGrabbing(streamSource, c_ulonglong(0), \
+                                               c_int(GENICAM_EGrabStrategy.grabStrartegySequential))
+    if (nRet != 0):
+        print("startGrabbing fail!")
+        # 释放相关资源
+        streamSource.contents.release(streamSource)
+        return -1
+
+    # Sleep 1秒
+    time.sleep(1)
 
     # 主动取图
     frame = pointer(GENICAM_Frame())
