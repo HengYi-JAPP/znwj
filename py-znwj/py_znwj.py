@@ -29,7 +29,7 @@ class PyZnwj(object):
         self._sink.pipe(
             ops.observe_on(pool_scheduler),
             ops.filter(lambda it: self._running),
-            ops.map(lambda it: self.grab_by_rfid(it)),
+            ops.map(lambda it: self.handle_next_rfid(it)),
         ).subscribe(
             on_next=lambda it: print('{} handled {}'.format('CameraMessage', it))
         )
@@ -42,9 +42,8 @@ class PyZnwj(object):
             # loop.create_task(self._sick_msg.start())
 
     def handle_next_rfid(self, rfid):
-        self._camera_msg.handle_next_rfid(rfid)
-
-    def handle_next_detect(self, rfid):
+        for camera in self._camera_msg._cameras:
+            camera.grab_by_rfid(rfid)
         result = self._detector.detect(rfid)
         if not hasattr(self, '_plc'):
             self._plc.handle_detect_result(result)
